@@ -15,6 +15,8 @@ import BottomNav, { type AppView } from "./components/bottom-nav";
 import TopNav from "./components/top-nav";
 import { type LocationData } from "./components/booking-form";
 import { type RideCategory } from "./components/ride-selector";
+import RatingModal from "./components/rating-modal";
+import NotificationsPanel from "./components/notifications-panel";
 
 // Import Leaflet Map dynamically (SSR disabled)
 const GlideMap = dynamic(() => import("./components/map"), {
@@ -51,6 +53,8 @@ const SEED_TRANSACTIONS: WalletTransaction[] = [
 ];
 
 export default function Home() {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [pendingRating, setPendingRating] = useState<{ driverName: string; categoryName: string; fare: number; pickupName: string; dropoffName: string } | null>(null);
   const [showSplash, setShowSplash] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -93,6 +97,50 @@ export default function Home() {
     transactions: SEED_TRANSACTIONS,
     promoApplied: null,
   });
+
+  const [deviceLocation, setDeviceLocation] = useState<LocationData | null>(null);
+
+  // ── Device Geolocation Effect with Reverse Geocoding ──
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const addressText = data.display_name || "Current Location";
+          
+          const name = data.address?.neighbourhood || 
+                       data.address?.suburb || 
+                       data.address?.road || 
+                       data.address?.city || 
+                       "My Location";
+
+          setDeviceLocation({
+            name,
+            lat: latitude,
+            lng: longitude,
+            address: addressText,
+          });
+        } catch (error) {
+          setDeviceLocation({
+            name: "My Location",
+            lat: latitude,
+            lng: longitude,
+            address: `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`,
+          });
+        }
+      },
+      (error) => {
+        console.warn("Geolocation warning:", error.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   const [settings, setSettings] = useState<AppSettings>({
     darkMode: false,
@@ -169,6 +217,12 @@ export default function Home() {
         status: "cancelled",
         cancelReason: "User cancelled",
       }, ...prev]);
+      setIsBooked(false);
+      setPickup(null);
+      setDropoff(null);
+      setRideStatus("searching");
+      setCurrentView("home");
+      return;
     }
     if (rideStatus === "completed" && pickup && dropoff) {
       const record: RideRecord = {
@@ -197,12 +251,46 @@ export default function Home() {
           type: "debit",
         }, ...prev.transactions],
       }));
+      // Show rating modal before returning home
+      setPendingRating({
+        driverName: "Marcus Sterling",
+        categoryName: selectedCategory?.name || "",
+        fare: bookedPrice,
+        pickupName: pickup.name,
+        dropoffName: dropoff.name,
+      });
+      setIsBooked(false);
+      setPickup(null);
+      setDropoff(null);
+      setRideStatus("searching");
+      setCurrentView("home");
     }
-    setIsBooked(false);
-    setPickup(null);
-    setDropoff(null);
-    setRideStatus("searching");
-    setCurrentView("home");
+  };
+
+  const handleRatingSubmitted = (rating: number, tip: number, comment: string) => {
+    // In a real app, submit rating to backend.
+    // Update the most recent ride history entry with the rating.
+    setRideHistory(prev => {
+      const updated = [...prev];
+      if (updated[0] && updated[0].status === "completed") {
+        updated[0] = { ...updated[0], rating };
+      }
+      return updated;
+    });
+    if (tip > 0) {
+      setPayment(prev => ({
+        ...prev,
+        walletBalance: prev.walletBalance - tip,
+        transactions: [{
+          id: `tx-tip-${Date.now()}`,
+          date: "Just now",
+          description: `Tip for Marcus Sterling`,
+          amount: tip,
+          type: "debit",
+        }, ...prev.transactions],
+      }));
+    }
+    setPendingRating(null);
   };
 
   const handleRebook = (p: LocationData, d: LocationData) => {
@@ -219,7 +307,7 @@ export default function Home() {
   return (
     <div className="app-container">
       {/* Desktop Icon Sidebar */}
-      <div style={{ display: "none" }} className="desktop-sidebar">
+      <div className="desktop-sidebar">
         <TopNav
           currentView={currentView}
           userName={userProfile.fullName}
@@ -251,11 +339,11 @@ export default function Home() {
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               {/* Notifications badge */}
               <div style={{ position: "relative" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--background)" }} />
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--background)", zIndex: 1 }} />
                 <button
                   style={{ width: 34, height: 34, border: "1px solid var(--card-border)", borderRadius: "10px", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}
-                  onClick={() => setCurrentView("settings")}
-                  title="Settings"
+                  onClick={() => setShowNotifications(true)}
+                  title="Notifications"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -282,6 +370,7 @@ export default function Home() {
               recentDestinations={recentDestinations}
               favoriteHome={userProfile.homeAddress ? { name: "Home", lat: 6.4281, lng: 3.4219, address: userProfile.homeAddress } : undefined}
               favoriteWork={userProfile.workAddress ? { name: "Work", lat: 6.5181, lng: 3.3989, address: userProfile.workAddress } : undefined}
+              deviceLocation={deviceLocation}
               onStartBooking={handleStartBooking}
             />
           )}
@@ -290,6 +379,7 @@ export default function Home() {
             <BookingScreen
               initialPickup={bookingInitialPickup}
               initialDropoff={bookingInitialDropoff}
+              deviceLocation={deviceLocation}
               onConfirmed={handleBookingConfirmed}
               onBack={() => setCurrentView("home")}
             />
@@ -336,8 +426,26 @@ export default function Home() {
       {/* Map Container */}
       {isLoggedIn && showMap && (
         <div className="map-container">
-          <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} />
+          <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} deviceLocation={deviceLocation} />
         </div>
+      )}
+
+      {/* Post-Ride Rating Modal */}
+      {pendingRating && (
+        <RatingModal
+          driverName={pendingRating.driverName}
+          categoryName={pendingRating.categoryName}
+          fare={pendingRating.fare}
+          pickupName={pendingRating.pickupName}
+          dropoffName={pendingRating.dropoffName}
+          onSubmit={handleRatingSubmitted}
+          onSkip={() => setPendingRating(null)}
+        />
+      )}
+
+      {/* Notifications Panel */}
+      {showNotifications && (
+        <NotificationsPanel onClose={() => setShowNotifications(false)} />
       )}
     </div>
   );

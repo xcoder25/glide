@@ -277,6 +277,69 @@ export default function ActiveRide({
         </div>
       )}
 
+      {/* ── AI Safety Companion: Route Deviation Alert ── */}
+      {status === "inprogress" && (
+        <div
+          className="animate-slide-up"
+          style={{
+            padding: "14px 16px",
+            background: "rgba(217,95,0,0.04)",
+            border: "1.5px solid rgba(217,95,0,0.2)",
+            borderRadius: "14px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-start",
+          }}
+        >
+          <div style={{ width: 32, height: 32, borderRadius: "10px", background: "rgba(217,95,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Shield size={16} style={{ color: "var(--primary)" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>AI Safety Companion</span>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} />
+              <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--accent)" }}>Active</span>
+            </div>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-main)", lineHeight: 1.5, fontWeight: 500 }}>
+              ⚠️ Minor deviation detected: Driver bypassed Third Mainland Bridge to avoid standstill traffic on Eko Bridge. Security monitoring is active.
+            </p>
+            <button
+              onClick={() => alert("📍 Live trip link copied! Share with your emergency contact.")}
+              style={{ marginTop: "8px", padding: "6px 12px", background: "rgba(217,95,0,0.1)", border: "1px solid rgba(217,95,0,0.2)", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 700, color: "var(--primary)", cursor: "pointer", fontFamily: "var(--font-sans)" }}
+            >
+              Share Live Link
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Smart ETA: Weather-Aware Card ── */}
+      {(status === "arriving" || status === "inprogress") && (
+        <div
+          style={{
+            padding: "14px 16px",
+            background: "rgba(26,107,60,0.04)",
+            border: "1px solid rgba(26,107,60,0.15)",
+            borderRadius: "14px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-start",
+          }}
+        >
+          <div style={{ width: 32, height: 32, borderRadius: "10px", background: "rgba(26,107,60,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "1rem" }}>
+            🌧️
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Smart ETA</span>
+            </div>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-main)", lineHeight: 1.5, fontWeight: 500 }}>
+              Heavy rain is slowing traffic along Carter Bridge. Arrival updated to <strong>{eta + 4} min</strong> (+4 min delay). Driver is taking Ozumba Mbadiwe as alternate route.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Driver Information Card */}
       {status !== "searching" && (
         <div
@@ -398,15 +461,45 @@ export default function ActiveRide({
         </div>
       )}
 
-      {/* Pricing and Bottom Panel buttons */}
+      {/* ── Trip Complete Receipt Card ── */}
       {status === "completed" ? (
-        <button
-          onClick={onCancel} // restarts the ride booking flow
-          className="btn btn-accent"
-          style={{ padding: "14px", marginTop: "6px" }}
-        >
-          Done • Paid ₦{price.toLocaleString()} <ArrowUpRight size={18} />
-        </button>
+        <div className="animate-slide-up" style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "4px" }}>
+          {/* Success banner */}
+          <div style={{ textAlign: "center", padding: "20px 16px", background: "linear-gradient(135deg, rgba(26,107,60,0.08) 0%, rgba(217,95,0,0.05) 100%)", border: "1.5px solid rgba(26,107,60,0.18)", borderRadius: "16px" }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent) 0%, #0d5c2e 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px auto", boxShadow: "0 8px 24px rgba(26,107,60,0.3)" }}>
+              <ArrowUpRight size={24} color="#fff" strokeWidth={2.5} />
+            </div>
+            <p style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)" }}>You've arrived! 🎉</p>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "4px" }}>Ride to {dropoffName} completed</p>
+          </div>
+
+          {/* Fare breakdown */}
+          <div style={{ padding: "16px 18px", background: "rgba(0,0,0,0.015)", border: "1px solid var(--card-border)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <p style={{ fontSize: "0.65rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Trip Receipt</p>
+            {[
+              { label: "Route", value: `${pickupName} → ${dropoffName}` },
+              { label: "Vehicle", value: categoryName },
+              { label: "Payment", value: "Glide Wallet" },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", flexShrink: 0 }}>{label}</span>
+                <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-main)", textAlign: "right" }}>{value}</span>
+              </div>
+            ))}
+            <div style={{ borderTop: "1px dashed var(--card-border)", paddingTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-main)" }}>Total Charged</span>
+              <span style={{ fontSize: "1.3rem", fontWeight: 900, color: "var(--primary)" }}>₦{price.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={onCancel}
+            className="btn btn-primary"
+            style={{ padding: "15px", fontSize: "1rem", background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}
+          >
+            <Star size={18} /> Done & Rate Your Ride
+          </button>
+        </div>
       ) : (
         <button
           onClick={onCancel}

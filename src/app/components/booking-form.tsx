@@ -406,19 +406,6 @@ export default function BookingForm({ onRouteSelected, onClear }: BookingFormPro
         </div>
       )}
 
-      <style jsx global>{`
-        @keyframes pulse-slow {
-          0%, 100% {
-            transform: translateY(-50%) scale(1);
-            opacity: 0.8;
-          }
-          50% {
-            transform: translateY(-50%) scale(1.15);
-            opacity: 1;
-            filter: drop-shadow(0 0 4px var(--primary));
-          }
-        }
-      `}</style>
     </div>
   );
 }

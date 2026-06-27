@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Navigation, ChevronRight, Loader, Check, Zap } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, ChevronRight, Check, Zap, Calendar, Clock } from "lucide-react";
 import { PRESET_LOCATIONS, type LocationData } from "./booking-form";
 import RideSelector, { type RideCategory } from "./ride-selector";
 
@@ -10,6 +10,7 @@ type BookingStep = "pickup" | "dropoff" | "vehicle" | "confirm" | "finding";
 interface BookingScreenProps {
   initialPickup?: LocationData;
   initialDropoff?: LocationData;
+  deviceLocation?: LocationData | null;
   onConfirmed: (pickup: LocationData, dropoff: LocationData, category: RideCategory, price: number) => void;
   onBack: () => void;
 }
@@ -128,7 +129,13 @@ function LocationPicker({
   );
 }
 
-export default function BookingScreen({ initialPickup, initialDropoff, onConfirmed, onBack }: BookingScreenProps) {
+export default function BookingScreen({
+  initialPickup,
+  initialDropoff,
+  deviceLocation = null,
+  onConfirmed,
+  onBack,
+}: BookingScreenProps) {
   const [step, setStep] = useState<BookingStep>(
     initialDropoff ? "vehicle" : initialPickup ? "dropoff" : "pickup"
   );
@@ -137,6 +144,17 @@ export default function BookingScreen({ initialPickup, initialDropoff, onConfirm
   const [selectedCategory, setSelectedCategory] = useState<RideCategory | null>(null);
   const [selectedPrice, setSelectedPrice] = useState(0);
   const [findingProgress, setFindingProgress] = useState(0);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
+
+  // Pre-fill scheduled date/time to 1 hour from now
+  useEffect(() => {
+    const now = new Date(Date.now() + 60 * 60 * 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setScheduledDate(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+    setScheduledTime(`${pad(now.getHours())}:${pad(now.getMinutes())}`);
+  }, []);
 
   const distance = pickup && dropoff ? getDistance(pickup, dropoff) : 0;
 
@@ -263,7 +281,12 @@ export default function BookingScreen({ initialPickup, initialDropoff, onConfirm
             />
             <button
               onClick={() => {
-                const currentLoc: LocationData = { name: "My Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+                const currentLoc: LocationData = deviceLocation || {
+                  name: "My Current Location",
+                  lat: 6.4281,
+                  lng: 3.4219,
+                  address: "Victoria Island, Lagos",
+                };
                 setPickup(currentLoc);
               }}
               style={{
@@ -433,6 +456,55 @@ export default function BookingScreen({ initialPickup, initialDropoff, onConfirm
         {/* STEP: Confirm */}
         {step === "confirm" && selectedCategory && (
           <>
+            {/* ── Schedule Toggle ── */}
+            <div style={{ padding: "16px", background: "rgba(217,95,0,0.04)", border: "1.5px solid rgba(217,95,0,0.15)", borderRadius: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isScheduled ? "14px" : 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: 34, height: 34, borderRadius: "10px", background: isScheduled ? "var(--primary)" : "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s" }}>
+                    <Calendar size={16} color={isScheduled ? "#fff" : "var(--text-muted)"} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-main)" }}>Schedule for later</p>
+                    <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "1px" }}>Book up to 7 days in advance</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsScheduled(!isScheduled)}
+                  style={{ width: 48, height: 26, borderRadius: 99, border: "none", background: isScheduled ? "var(--primary)" : "rgba(0,0,0,0.12)", cursor: "pointer", position: "relative", transition: "background 0.25s", flexShrink: 0 }}
+                >
+                  <div style={{ position: "absolute", top: 3, left: isScheduled ? "calc(100% - 23px)" : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.25s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+                </button>
+              </div>
+
+              {isScheduled && (
+                <div className="animate-slide-up" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: "4px", marginBottom: "6px" }}>
+                      <Calendar size={10} /> Date
+                    </label>
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={e => setScheduledDate(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid var(--card-border-focus)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(255,255,255,0.8)", outline: "none" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: "4px", marginBottom: "6px" }}>
+                      <Clock size={10} /> Time
+                    </label>
+                    <input
+                      type="time"
+                      value={scheduledTime}
+                      onChange={e => setScheduledTime(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid var(--card-border-focus)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(255,255,255,0.8)", outline: "none" }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div style={{ padding: "20px", background: "rgba(0,0,0,0.015)", borderRadius: "16px", border: "1px solid var(--card-border)", display: "flex", flexDirection: "column", gap: "14px" }}>
               <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Booking Summary</p>
               {[
@@ -442,10 +514,11 @@ export default function BookingScreen({ initialPickup, initialDropoff, onConfirm
                 { label: "Vehicle", value: selectedCategory.name },
                 { label: "ETA", value: `${selectedCategory.etaMinutes} min` },
                 { label: "Capacity", value: `${selectedCategory.capacity} passengers` },
+                ...(isScheduled && scheduledDate && scheduledTime ? [{ label: "Scheduled", value: `${new Date(scheduledDate + "T" + scheduledTime).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}` }] : []),
               ].map(({ label, value }) => (
                 <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
                   <span style={{ color: "var(--text-muted)" }}>{label}</span>
-                  <span style={{ color: "var(--text-main)", fontWeight: 600, textAlign: "right", maxWidth: "55%" }}>{value}</span>
+                  <span style={{ color: label === "Scheduled" ? "var(--primary)" : "var(--text-main)", fontWeight: label === "Scheduled" ? 700 : 600, textAlign: "right", maxWidth: "55%" }}>{value}</span>
                 </div>
               ))}
               <div style={{ borderTop: "1px solid var(--card-border)", paddingTop: "12px", display: "flex", justifyContent: "space-between" }}>
@@ -462,7 +535,7 @@ export default function BookingScreen({ initialPickup, initialDropoff, onConfirm
                 className="btn btn-primary"
                 style={{ flex: 1, padding: "15px", fontSize: "0.95rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >
-                <Zap size={18} /> Confirm Booking
+                <Zap size={18} /> {isScheduled ? "Schedule Ride" : "Confirm Booking"}
               </button>
             </div>
           </>

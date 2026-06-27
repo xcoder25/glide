@@ -10,10 +10,19 @@ interface MapProps {
   pickup: LocationData | null;
   dropoff: LocationData | null;
   status: RideStatus;
+  deviceLocation?: LocationData | null;
 }
 
 // Helper component to auto-focus map bounds on route change with responsive overlays offsets
-function MapController({ pickup, dropoff }: { pickup: LocationData | null; dropoff: LocationData | null }) {
+function MapController({
+  pickup,
+  dropoff,
+  deviceLocation,
+}: {
+  pickup: LocationData | null;
+  dropoff: LocationData | null;
+  deviceLocation: LocationData | null;
+}) {
   const map = useMap();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -60,16 +69,18 @@ function MapController({ pickup, dropoff }: { pickup: LocationData | null; dropo
       }
     } else if (dropoff) {
       map.setView([dropoff.lat, dropoff.lng], 14);
+    } else if (deviceLocation) {
+      map.setView([deviceLocation.lat, deviceLocation.lng], 13);
     } else {
       // Default to Lagos, Nigeria
       map.setView([6.5244, 3.3792], 13);
     }
-  }, [pickup, dropoff, map, isMobile]);
+  }, [pickup, dropoff, deviceLocation, map, isMobile]);
 
   return null;
 }
 
-export default function Map({ pickup, dropoff, status }: MapProps) {
+export default function Map({ pickup, dropoff, status, deviceLocation = null }: MapProps) {
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
   
   // Custom icons for Leaflet
@@ -181,7 +192,7 @@ export default function Map({ pickup, dropoff, status }: MapProps) {
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>
       <MapContainer
-        center={[6.5244, 3.3792]}
+        center={deviceLocation ? [deviceLocation.lat, deviceLocation.lng] : [6.5244, 3.3792]}
         zoom={13}
         zoomControl={true}
         style={{ height: "100%", width: "100%" }}
@@ -191,7 +202,7 @@ export default function Map({ pickup, dropoff, status }: MapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <MapController pickup={pickup} dropoff={dropoff} />
+        <MapController pickup={pickup} dropoff={dropoff} deviceLocation={deviceLocation} />
 
         {/* Pickup Pin */}
         {pickup && (
