@@ -140,7 +140,7 @@ body {
   }
   .control-panel {
     position: absolute !important;
-    bottom: 0;
+    bottom: 72px; /* sit above the bottom nav bar */
     left: 0;
     right: 0;
     width: 100% !important;
@@ -148,8 +148,13 @@ body {
     border-left: none !important;
     border-right: none !important;
     border-bottom: none !important;
-    max-height: 88vh;
+    max-height: calc(88vh - 72px);
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.10);
+  }
+
+  /* inner scrollable content: pad bottom so last item clears nav */
+  .control-panel .screen-scroll {
+    padding-bottom: 16px;
   }
   
   .drag-handle-container {

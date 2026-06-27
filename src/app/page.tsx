@@ -157,7 +157,8 @@ export default function Home() {
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       if (window.innerWidth <= 768) {
-        setSheetHeight(Math.round(window.innerHeight * 0.50));
+        // 50% of the usable height above the nav bar
+        setSheetHeight(Math.round((window.innerHeight - 72) * 0.50));
       }
     }
   }, [currentView]);
@@ -173,7 +174,7 @@ export default function Home() {
     if (!isDraggingSheet) return;
     const clientY = e.touches[0].clientY;
     const deltaY = dragStartY.current - clientY;
-    const maxH = Math.round(window.innerHeight * 0.88);
+    const maxH = Math.round((window.innerHeight - 72) * 0.88);
     const minH = 220;
     const newH = Math.max(minH, Math.min(maxH, dragStartHeight.current + deltaY));
     setSheetHeight(newH);
@@ -182,9 +183,10 @@ export default function Home() {
   const handleTouchEnd = () => {
     setIsDraggingSheet(false);
     if (typeof window === "undefined") return;
+    const usableH = window.innerHeight - 72; // subtract nav bar
     const snapMin = 260;
-    const snapDefault = Math.round(window.innerHeight * 0.50);
-    const snapMax = Math.round(window.innerHeight * 0.88);
+    const snapDefault = Math.round(usableH * 0.50);
+    const snapMax = Math.round(usableH * 0.88);
 
     const diffs = [
       { val: snapMin, diff: Math.abs(sheetHeight - snapMin) },
@@ -197,8 +199,9 @@ export default function Home() {
 
   const handleDragHandleClick = () => {
     if (typeof window === "undefined") return;
-    const snapDefault = Math.round(window.innerHeight * 0.50);
-    const snapMax = Math.round(window.innerHeight * 0.88);
+    const usableH = window.innerHeight - 72;
+    const snapDefault = Math.round(usableH * 0.50);
+    const snapMax = Math.round(usableH * 0.88);
     if (sheetHeight < snapMax - 50) {
       setSheetHeight(snapMax);
     } else {
