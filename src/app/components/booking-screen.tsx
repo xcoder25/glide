@@ -158,6 +158,19 @@ export default function BookingScreen({
 
   const distance = pickup && dropoff ? getDistance(pickup, dropoff) : 0;
 
+  // Sort locations by proximity to deviceLocation
+  const sortedLocations = [...PRESET_LOCATIONS];
+  if (deviceLocation) {
+    sortedLocations.sort((a, b) => {
+      const distA = Math.sqrt((a.lat - deviceLocation.lat) ** 2 + (a.lng - deviceLocation.lng) ** 2);
+      const distB = Math.sqrt((b.lat - deviceLocation.lat) ** 2 + (b.lng - deviceLocation.lng) ** 2);
+      return distA - distB;
+    });
+  }
+
+  // Filter out the selected pickup location from dropoff recommendations
+  const sortedDropoffs = sortedLocations.filter(loc => loc.name !== pickup?.name).slice(0, 4);
+
   // "Finding driver" fake progress
   useEffect(() => {
     if (step !== "finding") return;
@@ -310,7 +323,7 @@ export default function BookingScreen({
             <div>
               <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Nearby Places</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {PRESET_LOCATIONS.slice(0, 4).map(loc => (
+                {sortedLocations.slice(0, 4).map(loc => (
                   <button
                     key={loc.name}
                     onClick={() => setPickup(loc)}
@@ -372,7 +385,7 @@ export default function BookingScreen({
             <div>
               <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Popular Destinations</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {PRESET_LOCATIONS.slice(1, 5).map(loc => (
+                {sortedDropoffs.map(loc => (
                   <button
                     key={loc.name}
                     onClick={() => setDropoff(loc)}

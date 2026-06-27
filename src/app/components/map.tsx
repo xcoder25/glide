@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
-import L from "leaflet";
+import React, { useEffect, useRef, useState } from "react";
 import { LocationData } from "./booking-form";
 import { RideStatus } from "./active-ride";
 
@@ -13,127 +11,79 @@ interface MapProps {
   deviceLocation?: LocationData | null;
 }
 
-// Helper component to auto-focus map bounds on route change with responsive overlays offsets
-function MapController({
-  pickup,
-  dropoff,
-  deviceLocation,
-}: {
-  pickup: LocationData | null;
-  dropoff: LocationData | null;
-  deviceLocation: LocationData | null;
-}) {
-  const map = useMap();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (pickup && dropoff) {
-      const bounds = L.latLngBounds(
-        [pickup.lat, pickup.lng],
-        [dropoff.lat, dropoff.lng]
-      );
-      
-      // Calculate responsive offsets: 
-      // Desktop: floating card is 420px wide on left. Add 480px left padding.
-      // Mobile: bottom sheet is ~320px tall on bottom. Add 360px bottom padding.
-      if (isMobile) {
-        map.fitBounds(bounds, {
-          paddingTopLeft: [40, 40],
-          paddingBottomRight: [40, 360],
-          maxZoom: 15
-        });
-      } else {
-        map.fitBounds(bounds, {
-          paddingTopLeft: [60, 60],
-          paddingBottomRight: [60, 60],
-          maxZoom: 15
-        });
-      }
-    } else if (pickup) {
-      if (isMobile) {
-        // Offset center upward on mobile to make room for bottom sheet
-        const offsetLat = pickup.lat - 0.006;
-        map.setView([offsetLat, pickup.lng], 14);
-      } else {
-        // Map is side-by-side on desktop, center normally
-        map.setView([pickup.lat, pickup.lng], 14);
-      }
-    } else if (dropoff) {
-      map.setView([dropoff.lat, dropoff.lng], 14);
-    } else if (deviceLocation) {
-      map.setView([deviceLocation.lat, deviceLocation.lng], 13);
-    } else {
-      // Default to Lagos, Nigeria
-      map.setView([6.5244, 3.3792], 13);
-    }
-  }, [pickup, dropoff, deviceLocation, map, isMobile]);
-
-  return null;
-}
+const DEFAULT_MAP_KEY = "AIzaSyC9pjeW86GjRVxD61kagnVyopzLuRamdpA";
+const MAP_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || DEFAULT_MAP_KEY;
 
 export default function Map({ pickup, dropoff, status, deviceLocation = null }: MapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
-  
-  // Custom icons for Leaflet
-  const [icons, setIcons] = useState<{
-    pickup: L.DivIcon;
-    dropoff: L.DivIcon;
-    driver: L.DivIcon;
-  } | null>(null);
 
+  const mapInstanceRef = useRef<any>(null);
+  const pickupMarkerRef = useRef<any>(null);
+  const dropoffMarkerRef = useRef<any>(null);
+  const driverMarkerRef = useRef<any>(null);
+  const polylineRef = useRef<any>(null);
+
+  // Load Google Maps Script dynamically to prevent build-time/SSR failures
   useEffect(() => {
-    setIcons({
-      pickup: L.divIcon({
-        html: `<div class="pulse-marker"><div class="pulse-ring"></div><div class="pulse-core"></div></div>`,
-        className: "custom-leaflet-icon-pickup",
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      }),
-      dropoff: L.divIcon({
-        html: `<div style="
-          width: 14px; 
-          height: 14px; 
-          background: #1A6B3C; 
-          border: 2px solid white; 
-          border-radius: 4px; 
-          box-shadow: 0 2px 10px rgba(26, 107, 60, 0.6);
-          transform: rotate(45deg);
-        "></div>`,
-        className: "custom-leaflet-icon-dropoff",
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
-      }),
-      driver: L.divIcon({
-        html: `<div style="
-          width: 36px; 
-          height: 36px; 
-          background: #ffffff; 
-          border: 2.5px solid #D95F00; 
-          border-radius: 50%; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          box-shadow: 0 4px 15px rgba(217, 95, 0, 0.35);
-        ">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#D95F00" stroke="#D95F00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); margin-left: -1px; margin-top: -1px;">
-            <polygon points="12 2 2 22 12 17 22 22 12 2"></polygon>
-          </svg>
-        </div>`,
-        className: "custom-leaflet-icon-driver",
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
-      })
-    });
+    const callback = () => setGoogleMapsLoaded(true);
+    if (typeof window === "undefined") return;
+
+    if ((window as any).google && (window as any).google.maps) {
+      callback();
+      return;
+    }
+
+    const existingScript = document.getElementById("googleMapsScript");
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_KEY}&libraries=geometry`;
+      script.id = "googleMapsScript";
+      script.async = true;
+      script.defer = true;
+      script.onload = callback;
+      document.head.appendChild(script);
+    } else {
+      const checkInterval = setInterval(() => {
+        if ((window as any).google && (window as any).google.maps) {
+          clearInterval(checkInterval);
+          callback();
+        }
+      }, 100);
+      return () => clearInterval(checkInterval);
+    }
   }, []);
+
+  // Initialize Google Maps instance
+  useEffect(() => {
+    if (!googleMapsLoaded || !mapRef.current || mapInstanceRef.current) return;
+
+    const googleMaps = (window as any).google.maps;
+    const defaultCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
+    const center = deviceLocation ? { lat: deviceLocation.lat, lng: deviceLocation.lng } : defaultCenter;
+
+    mapInstanceRef.current = new googleMaps.Map(mapRef.current, {
+      center,
+      zoom: 13,
+      disableDefaultUI: false,
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: [
+        // Custom minimal style to fit Glide's dark/luxury theme
+        { featureType: "all", elementType: "labels.text.fill", color: "#747474" },
+        { featureType: "administrative", elementType: "geometry.fill", color: "#000000" },
+        { featureType: "landscape", elementType: "geometry.fill", color: "#f8fafc" },
+        { featureType: "poi", elementType: "geometry.fill", color: "#f1f5f9" },
+        { featureType: "road", elementType: "geometry.fill", color: "#ffffff" },
+        { featureType: "road.highway", elementType: "geometry.fill", color: "#ffe1cc" },
+        { featureType: "road.highway", elementType: "geometry.stroke", color: "#ffc299" },
+        { featureType: "water", elementType: "geometry.fill", color: "#cbd5e1" },
+      ],
+    });
+  }, [googleMapsLoaded, deviceLocation]);
 
   // Driver movement simulation
   useEffect(() => {
@@ -187,52 +137,166 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null }: 
     };
   }, [pickup, dropoff, status]);
 
-  if (!icons) return <div style={{ height: "100%", width: "100%", background: "#f8fafc" }}></div>;
+  // Update markers, polyline and bounds
+  useEffect(() => {
+    if (!googleMapsLoaded || !mapInstanceRef.current) return;
+
+    const googleMaps = (window as any).google.maps;
+    const map = mapInstanceRef.current;
+
+    // 1. Pickup Marker (Orange Pulse)
+    if (pickup) {
+      const position = { lat: pickup.lat, lng: pickup.lng };
+      if (!pickupMarkerRef.current) {
+        pickupMarkerRef.current = new googleMaps.Marker({
+          position,
+          map,
+          icon: {
+            url: "data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='12' cy='12' r='6' fill='%23D95F00' stroke='%23ffffff' stroke-width='2.5'/><circle cx='12' cy='12' r='10' fill='none' stroke='%23D95F00' stroke-width='1.5' stroke-opacity='0.4'/></svg>",
+            scaledSize: new googleMaps.Size(24, 24),
+            anchor: new googleMaps.Point(12, 12),
+          },
+          title: "Pickup Location",
+        });
+      } else {
+        pickupMarkerRef.current.setPosition(position);
+        pickupMarkerRef.current.setMap(map);
+      }
+    } else if (pickupMarkerRef.current) {
+      pickupMarkerRef.current.setMap(null);
+    }
+
+    // 2. Dropoff Marker (Green Diamond)
+    if (dropoff) {
+      const position = { lat: dropoff.lat, lng: dropoff.lng };
+      if (!dropoffMarkerRef.current) {
+        dropoffMarkerRef.current = new googleMaps.Marker({
+          position,
+          map,
+          icon: {
+            url: "data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><rect x='4' y='4' width='12' height='12' rx='2' fill='%231A6B3C' stroke='%23ffffff' stroke-width='2' transform='rotate(45 10 10)'/></svg>",
+            scaledSize: new googleMaps.Size(20, 20),
+            anchor: new googleMaps.Point(10, 10),
+          },
+          title: "Dropoff Location",
+        });
+      } else {
+        dropoffMarkerRef.current.setPosition(position);
+        dropoffMarkerRef.current.setMap(map);
+      }
+    } else if (dropoffMarkerRef.current) {
+      dropoffMarkerRef.current.setMap(null);
+    }
+
+    // 3. Polyline Connecting Points
+    if (pickup && dropoff) {
+      const path = [
+        { lat: pickup.lat, lng: pickup.lng },
+        { lat: dropoff.lat, lng: dropoff.lng },
+      ];
+      if (!polylineRef.current) {
+        polylineRef.current = new googleMaps.Polyline({
+          path,
+          geodesic: true,
+          strokeColor: "#D95F00",
+          strokeOpacity: 0.8,
+          strokeWeight: 4,
+          map,
+        });
+      } else {
+        polylineRef.current.setPath(path);
+        polylineRef.current.setMap(map);
+      }
+    } else if (polylineRef.current) {
+      polylineRef.current.setMap(null);
+    }
+
+    // 4. Center Map / Fit bounds
+    if (pickup && dropoff) {
+      const bounds = new googleMaps.LatLngBounds();
+      bounds.extend({ lat: pickup.lat, lng: pickup.lng });
+      bounds.extend({ lat: dropoff.lat, lng: dropoff.lng });
+      map.fitBounds(bounds, { top: 80, bottom: 280, left: 60, right: 60 });
+    } else if (pickup) {
+      map.setCenter({ lat: pickup.lat, lng: pickup.lng });
+      map.setZoom(14);
+    } else if (dropoff) {
+      map.setCenter({ lat: dropoff.lat, lng: dropoff.lng });
+      map.setZoom(14);
+    } else if (deviceLocation) {
+      map.setCenter({ lat: deviceLocation.lat, lng: deviceLocation.lng });
+      map.setZoom(13);
+    }
+  }, [googleMapsLoaded, pickup, dropoff, deviceLocation]);
+
+  // Update Driver position Marker
+  useEffect(() => {
+    if (!googleMapsLoaded || !mapInstanceRef.current) return;
+
+    const googleMaps = (window as any).google.maps;
+    const map = mapInstanceRef.current;
+
+    if (driverPos) {
+      const position = { lat: driverPos[0], lng: driverPos[1] };
+      if (!driverMarkerRef.current) {
+        driverMarkerRef.current = new googleMaps.Marker({
+          position,
+          map,
+          icon: {
+            url: "data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><circle cx='18' cy='18' r='12' fill='%23ffffff' stroke='%23D95F00' stroke-width='2.5'/><polygon points='18,11 14,23 18,20 22,23' fill='%23D95F00'/></svg>",
+            scaledSize: new googleMaps.Size(36, 36),
+            anchor: new googleMaps.Point(18, 18),
+          },
+          title: "Marcus Sterling (Tesla)",
+        });
+      } else {
+        driverMarkerRef.current.setPosition(position);
+        driverMarkerRef.current.setMap(map);
+      }
+    } else if (driverMarkerRef.current) {
+      driverMarkerRef.current.setMap(null);
+    }
+  }, [googleMapsLoaded, driverPos]);
 
   return (
-    <div style={{ height: "100%", width: "100%", position: "relative" }}>
-      <MapContainer
-        center={deviceLocation ? [deviceLocation.lat, deviceLocation.lng] : [6.5244, 3.3792]}
-        zoom={13}
-        zoomControl={true}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <MapController pickup={pickup} dropoff={dropoff} deviceLocation={deviceLocation} />
-
-        {/* Pickup Pin */}
-        {pickup && (
-          <Marker position={[pickup.lat, pickup.lng]} icon={icons.pickup} />
-        )}
-
-        {/* Dropoff Pin */}
-        {dropoff && (
-          <Marker position={[dropoff.lat, dropoff.lng]} icon={icons.dropoff} />
-        )}
-
-        {/* Active Route Polyline */}
-        {pickup && dropoff && (
-          <Polyline
-            positions={[
-              [pickup.lat, pickup.lng],
-              [dropoff.lat, dropoff.lng],
-            ]}
-            color="var(--primary)"
-            weight={4}
-            opacity={0.7}
-            dashArray="8, 6"
-          />
-        )}
-
-        {/* Driver Vehicle Pin */}
-        {driverPos && (
-          <Marker position={driverPos} icon={icons.driver} />
-        )}
-      </MapContainer>
+    <div
+      ref={mapRef}
+      style={{
+        height: "100%",
+        width: "100%",
+        background: "#070a13",
+        position: "relative",
+      }}
+    >
+      {!googleMapsLoaded && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#070a13",
+            color: "rgba(255,255,255,0.4)",
+            zIndex: 10,
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: "3px solid rgba(217,95,0,0.4)",
+                borderTopColor: "var(--primary)",
+                borderRadius: "50%",
+                animation: "spin 1s infinite linear",
+                margin: "0 auto 12px auto",
+              }}
+            />
+            <span style={{ fontSize: "0.85rem" }}>Loading Google Maps...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

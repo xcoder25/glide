@@ -153,7 +153,7 @@ export default function PaymentScreen({ payment, onPaymentChange }: PaymentScree
                     }}
                   >
                     <Plus size={12} />
-                    ₦{(amt / 1000).toFixed(amt < 1000 ? 0 : 0)}k{amt < 1000 ? "500" : ""}
+                    {amt >= 1000 ? `₦${amt / 1000}k` : `₦${amt}`}
                   </button>
                 ))}
               </div>

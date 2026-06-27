@@ -362,6 +362,75 @@ export default function Home() {
           </header>
         )}
 
+        {/* Live Activity Tracker Banner */}
+        {isBooked && currentView !== "ride" && (
+          <div
+            className="animate-slide-up"
+            onClick={() => setCurrentView("ride")}
+            style={{
+              padding: "12px 18px",
+              background: "linear-gradient(135deg, rgba(217,95,0,0.08) 0%, rgba(26,107,60,0.08) 100%)",
+              borderBottom: "1.5px solid rgba(217,95,0,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              cursor: "pointer",
+              gap: "12px",
+              zIndex: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "var(--primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(217,95,0,0.25)",
+                  flexShrink: 0,
+                }}
+              >
+                {/* SVG Car Icon */}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+                  <circle cx="7" cy="17" r="2" />
+                  <circle cx="17" cy="17" r="2" />
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>
+                  {rideStatus === "searching" && "Connecting with driver..."}
+                  {rideStatus === "arriving" && "Driver is arriving shortly"}
+                  {rideStatus === "arrived" && "Driver has arrived outside!"}
+                  {rideStatus === "inprogress" && "On trip to destination"}
+                  {rideStatus === "completed" && "Trip completed"}
+                </p>
+                <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "1px" }}>
+                  {selectedCategory?.name || "Glide Comfort"} • Marcus Sterling (GLIDE-001)
+                </p>
+              </div>
+            </div>
+            <button
+              style={{
+                padding: "6px 12px",
+                background: "var(--primary)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              Track Live
+            </button>
+          </div>
+        )}
+
         {/* Content Area */}
         <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
           {currentView === "home" && (

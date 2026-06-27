@@ -62,19 +62,35 @@ const CATEGORIES: RideCategory[] = [
 
 interface RideSelectorProps {
   distanceMiles: number;
+  promoApplied?: string | null;
   onBookRide: (category: RideCategory, price: number) => void;
 }
 
-export default function RideSelector({ distanceMiles, onBookRide }: RideSelectorProps) {
+export default function RideSelector({ distanceMiles, promoApplied = null, onBookRide }: RideSelectorProps) {
   const [selectedId, setSelectedId] = useState<string>("standard");
 
   const calculatePrice = (cat: RideCategory) => {
-    const price = cat.basePrice + cat.perMilePrice * distanceMiles;
-    return parseFloat(price.toFixed(2));
+    const originalPrice = cat.basePrice + cat.perMilePrice * distanceMiles;
+    let finalPrice = originalPrice;
+
+    if (promoApplied === "GLIDE10") {
+      finalPrice = originalPrice * 0.9;
+    } else if (promoApplied === "FRIDAY20") {
+      finalPrice = originalPrice * 0.8;
+    } else if (promoApplied === "WELCOME") {
+      finalPrice = Math.max(0, originalPrice - 500);
+    } else if (promoApplied === "LAGOS50") {
+      finalPrice = Math.max(0, originalPrice - 50);
+    }
+
+    return {
+      original: parseFloat(originalPrice.toFixed(2)),
+      final: parseFloat(finalPrice.toFixed(2)),
+    };
   };
 
   const selectedCategory = CATEGORIES.find((cat) => cat.id === selectedId) || CATEGORIES[0];
-  const totalPrice = calculatePrice(selectedCategory);
+  const totalPrice = calculatePrice(selectedCategory).final;
 
   const getTierColor = (id: string) => {
     switch (id) {
@@ -191,6 +207,19 @@ export default function RideSelector({ distanceMiles, onBookRide }: RideSelector
 
               {/* Right Price */}
               <div style={{ textAlign: "right" }}>
+                {price.final !== price.original && (
+                  <span
+                    style={{
+                      fontSize: "0.8rem",
+                      textDecoration: "line-through",
+                      color: isSelected ? "rgba(255,255,255,0.7)" : "var(--text-muted)",
+                      marginRight: "6px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    ₦{price.original.toLocaleString()}
+                  </span>
+                )}
                 <div
                   style={{
                     fontSize: "1.15rem",
@@ -198,9 +227,10 @@ export default function RideSelector({ distanceMiles, onBookRide }: RideSelector
                     color: isSelected ? tierColor : "var(--text-main)",
                     textShadow: isSelected ? `0 2px 8px ${tierColor}15` : "none",
                     transition: "all 0.25s ease",
+                    display: "inline-block",
                   }}
                 >
-                  ₦{price.toLocaleString()}
+                  ₦{price.final.toLocaleString()}
                 </div>
               </div>
             </div>

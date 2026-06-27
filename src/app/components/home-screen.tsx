@@ -260,10 +260,19 @@ export default function HomeScreen({
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  const sortedPresets = [...PRESET_LOCATIONS];
+  if (deviceLocation) {
+    sortedPresets.sort((a, b) => {
+      const distA = Math.sqrt((a.lat - deviceLocation.lat) ** 2 + (a.lng - deviceLocation.lng) ** 2);
+      const distB = Math.sqrt((b.lat - deviceLocation.lat) ** 2 + (b.lng - deviceLocation.lng) ** 2);
+      return distA - distB;
+    });
+  }
+
   const quickDestinations: LocationData[] = [
     ...(favoriteHome ? [{ ...favoriteHome, name: "🏠 Home" }] : []),
     ...(favoriteWork ? [{ ...favoriteWork, name: "💼 Work" }] : []),
-    ...PRESET_LOCATIONS.slice(0, favoriteHome && favoriteWork ? 2 : favoriteHome || favoriteWork ? 3 : 4),
+    ...sortedPresets,
   ].slice(0, 4);
 
   return (
