@@ -1,0 +1,344 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import AuthScreen from "./components/auth-screen";
+import SplashScreen from "./components/splash-screen";
+import HomeScreen from "./components/home-screen";
+import BookingScreen from "./components/booking-screen";
+import ActiveRide, { type RideStatus } from "./components/active-ride";
+import PaymentScreen, { type PaymentState, type WalletTransaction } from "./components/payment-screen";
+import RideHistoryScreen, { type RideRecord } from "./components/ride-history-screen";
+import ProfileScreen, { type UserProfile } from "./components/profile-screen";
+import SettingsScreen, { type AppSettings } from "./components/settings-screen";
+import BottomNav, { type AppView } from "./components/bottom-nav";
+import TopNav from "./components/top-nav";
+import { type LocationData } from "./components/booking-form";
+import { type RideCategory } from "./components/ride-selector";
+
+// Import Leaflet Map dynamically (SSR disabled)
+const GlideMap = dynamic(() => import("./components/map"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#070a13", color: "rgba(255,255,255,0.4)" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ width: 32, height: 32, border: "3px solid rgba(217,95,0,0.4)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s infinite linear", margin: "0 auto 12px auto" }} />
+        <span style={{ fontSize: "0.85rem" }}>Loading map...</span>
+      </div>
+    </div>
+  ),
+});
+
+// Haversine in km
+function getKmDistance(loc1: LocationData, loc2: LocationData) {
+  const R = 6371;
+  const dLat = ((loc2.lat - loc1.lat) * Math.PI) / 180;
+  const dLon = ((loc2.lng - loc1.lng) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((loc1.lat * Math.PI) / 180) * Math.cos((loc2.lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return parseFloat((R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1));
+}
+
+const SEED_HISTORY: RideRecord[] = [
+  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ikeja City Mall", dropoff: "Lekki Conservation Centre", fare: 6800, distance: 18, category: "Glide Comfort", driverName: "Marcus Sterling", rating: 5, status: "completed" },
+  { id: "r2", date: "June 26, 9:04 AM", pickup: "Eko Hotels & Suites", dropoff: "MMIA Airport", fare: 12500, distance: 24, category: "Glide Executive", driverName: "Chidi Obi", rating: 4, status: "completed" },
+  { id: "r3", date: "June 24, 7:30 PM", pickup: "UNILAG", dropoff: "National Theatre", fare: 0, distance: 8, category: "Glide Standard", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
+];
+
+const SEED_TRANSACTIONS: WalletTransaction[] = [
+  { id: "tx1", date: "Yesterday", description: "Ride Payment — Ikeja → Lekki", amount: 6800, type: "debit" },
+  { id: "tx2", date: "June 26", description: "Wallet Top-up", amount: 20000, type: "credit" },
+  { id: "tx3", date: "June 24", description: "Promo Bonus — WELCOME", amount: 500, type: "credit" },
+];
+
+export default function Home() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ── View State Machine ──
+  const [currentView, setCurrentView] = useState<AppView>("home");
+
+  // ── User State ──
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    fullName: "Rider",
+    phone: "+234 800 000 0000",
+    email: "rider@glide.ng",
+    homeAddress: "",
+    workAddress: "",
+    emergencyName: "",
+    emergencyPhone: "",
+    avatarColor: "#D95F00",
+  });
+
+  // ── Ride State ──
+  const [pickup, setPickup] = useState<LocationData | null>(null);
+  const [dropoff, setDropoff] = useState<LocationData | null>(null);
+  const [distance, setDistance] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<RideCategory | null>(null);
+  const [bookedPrice, setBookedPrice] = useState(0);
+  const [rideStatus, setRideStatus] = useState<RideStatus>("searching");
+  const [isBooked, setIsBooked] = useState(false);
+
+  // ── Booking Screen ──
+  const [bookingInitialPickup, setBookingInitialPickup] = useState<LocationData | undefined>();
+  const [bookingInitialDropoff, setBookingInitialDropoff] = useState<LocationData | undefined>();
+
+  // ── History / Payment / Settings ──
+  const [rideHistory, setRideHistory] = useState<RideRecord[]>(SEED_HISTORY);
+  const [recentDestinations, setRecentDestinations] = useState<LocationData[]>([]);
+
+  const [payment, setPayment] = useState<PaymentState>({
+    walletBalance: 15200,
+    preferCash: false,
+    activeCard: "visa-4829",
+    transactions: SEED_TRANSACTIONS,
+    promoApplied: null,
+  });
+
+  const [settings, setSettings] = useState<AppSettings>({
+    darkMode: false,
+    notifications: true,
+    language: "English",
+  });
+
+  // ── Dark Mode Effect ──
+  useEffect(() => {
+    const html = document.documentElement;
+    if (settings.darkMode) {
+      html.setAttribute("data-theme", "dark");
+    } else {
+      html.removeAttribute("data-theme");
+    }
+  }, [settings.darkMode]);
+
+  // ── Distance calc ──
+  useEffect(() => {
+    if (pickup && dropoff) {
+      setDistance(getKmDistance(pickup, dropoff));
+    } else {
+      setDistance(0);
+    }
+  }, [pickup, dropoff]);
+
+  // ─── HANDLERS ───
+
+  const handleLoginSuccess = (name: string, phone: string, email: string) => {
+    setUserProfile(prev => ({ ...prev, fullName: name, phone, email }));
+    setIsLoggedIn(true);
+    setCurrentView("home");
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentView("home");
+    setIsBooked(false);
+    setPickup(null);
+    setDropoff(null);
+  };
+
+  const handleStartBooking = (initialPickup?: LocationData, initialDropoff?: LocationData) => {
+    setBookingInitialPickup(initialPickup);
+    setBookingInitialDropoff(initialDropoff);
+    setCurrentView("booking");
+  };
+
+  const handleBookingConfirmed = (p: LocationData, d: LocationData, cat: RideCategory, price: number) => {
+    setPickup(p);
+    setDropoff(d);
+    setSelectedCategory(cat);
+    setBookedPrice(price);
+    setRideStatus("arriving");
+    setIsBooked(true);
+    setCurrentView("ride");
+    // Add to recent destinations
+    setRecentDestinations(prev => [d, ...prev.filter(l => l.name !== d.name)].slice(0, 5));
+  };
+
+  const handleCancelRide = () => {
+    if (rideStatus !== "completed" && pickup && dropoff) {
+      setRideHistory(prev => [{
+        id: `r${Date.now()}`,
+        date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
+        pickup: pickup.name,
+        dropoff: dropoff.name,
+        pickupData: pickup,
+        dropoffData: dropoff,
+        fare: 0,
+        distance,
+        category: selectedCategory?.name || "",
+        driverName: "Marcus Sterling",
+        status: "cancelled",
+        cancelReason: "User cancelled",
+      }, ...prev]);
+    }
+    if (rideStatus === "completed" && pickup && dropoff) {
+      const record: RideRecord = {
+        id: `r${Date.now()}`,
+        date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
+        pickup: pickup.name,
+        dropoff: dropoff.name,
+        pickupData: pickup,
+        dropoffData: dropoff,
+        fare: bookedPrice,
+        distance,
+        category: selectedCategory?.name || "",
+        driverName: "Marcus Sterling",
+        rating: 5,
+        status: "completed",
+      };
+      setRideHistory(prev => [record, ...prev]);
+      setPayment(prev => ({
+        ...prev,
+        walletBalance: prev.walletBalance - bookedPrice,
+        transactions: [{
+          id: `tx${Date.now()}`,
+          date: "Just now",
+          description: `Ride — ${pickup.name} → ${dropoff.name}`,
+          amount: bookedPrice,
+          type: "debit",
+        }, ...prev.transactions],
+      }));
+    }
+    setIsBooked(false);
+    setPickup(null);
+    setDropoff(null);
+    setRideStatus("searching");
+    setCurrentView("home");
+  };
+
+  const handleRebook = (p: LocationData, d: LocationData) => {
+    handleStartBooking(p, d);
+  };
+
+  // ─── RENDER ───
+
+  if (showSplash) return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  if (!isLoggedIn) return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+
+  const showMap = currentView === "home" || currentView === "booking" || currentView === "ride";
+
+  return (
+    <div className="app-container">
+      {/* Desktop Icon Sidebar */}
+      <div style={{ display: "none" }} className="desktop-sidebar">
+        <TopNav
+          currentView={currentView}
+          userName={userProfile.fullName}
+          onNavigate={setCurrentView}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      {/* Control Panel */}
+      <div className="control-panel">
+        {/* Mobile Drag Handle */}
+        <div className="drag-handle-container">
+          <div className="drag-handle-pill" />
+        </div>
+
+        {/* Header (shown on home, profile, history, payment, settings views) */}
+        {(currentView === "home" || currentView === "profile" || currentView === "history" || currentView === "payment" || currentView === "settings") && (
+          <header style={{ padding: "16px 24px", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              {/* Logo */}
+              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(217,95,0,0.25)" }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <span style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Glide</span>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {/* Notifications badge */}
+              <div style={{ position: "relative" }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--background)" }} />
+                <button
+                  style={{ width: 34, height: 34, border: "1px solid var(--card-border)", borderRadius: "10px", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}
+                  onClick={() => setCurrentView("settings")}
+                  title="Settings"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </button>
+              </div>
+              {/* Avatar */}
+              <button
+                onClick={() => setCurrentView("profile")}
+                style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), var(--accent))", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 800, color: "#fff", fontFamily: "var(--font-sans)" }}
+                title="Profile"
+              >
+                {userProfile.fullName.charAt(0).toUpperCase()}
+              </button>
+            </div>
+          </header>
+        )}
+
+        {/* Content Area */}
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+          {currentView === "home" && (
+            <HomeScreen
+              userName={userProfile.fullName}
+              recentDestinations={recentDestinations}
+              favoriteHome={userProfile.homeAddress ? { name: "Home", lat: 6.4281, lng: 3.4219, address: userProfile.homeAddress } : undefined}
+              favoriteWork={userProfile.workAddress ? { name: "Work", lat: 6.5181, lng: 3.3989, address: userProfile.workAddress } : undefined}
+              onStartBooking={handleStartBooking}
+            />
+          )}
+
+          {currentView === "booking" && (
+            <BookingScreen
+              initialPickup={bookingInitialPickup}
+              initialDropoff={bookingInitialDropoff}
+              onConfirmed={handleBookingConfirmed}
+              onBack={() => setCurrentView("home")}
+            />
+          )}
+
+          {currentView === "ride" && (
+            <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", flex: 1, padding: "24px" }}>
+              <ActiveRide
+                categoryName={selectedCategory?.name || ""}
+                price={bookedPrice}
+                pickupName={pickup?.name || ""}
+                dropoffName={dropoff?.name || ""}
+                status={rideStatus}
+                onStatusChange={setRideStatus}
+                onCancel={handleCancelRide}
+              />
+            </div>
+          )}
+
+          {currentView === "payment" && (
+            <PaymentScreen payment={payment} onPaymentChange={setPayment} />
+          )}
+
+          {currentView === "history" && (
+            <RideHistoryScreen history={rideHistory} onRebook={handleRebook} />
+          )}
+
+          {currentView === "profile" && (
+            <ProfileScreen profile={userProfile} onSave={setUserProfile} />
+          )}
+
+          {currentView === "settings" && (
+            <SettingsScreen
+              settings={settings}
+              onSettingsChange={setSettings}
+            />
+          )}
+        </div>
+
+        {/* Bottom Nav (mobile) */}
+        <BottomNav currentView={currentView} onNavigate={setCurrentView} />
+      </div>
+
+      {/* Map Container */}
+      {isLoggedIn && showMap && (
+        <div className="map-container">
+          <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} />
+        </div>
+      )}
+    </div>
+  );
+}
