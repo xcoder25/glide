@@ -184,8 +184,8 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             color: "var(--text-main)",
             letterSpacing: "-0.04em"
           }}>
-            Luxury travel, <br />
-            made <span style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>simple.</span>
+            Fast rides, <br />
+            on <span style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>demand.</span>
           </h2>
           <p style={{
             fontSize: "clamp(0.95rem, 3.5vw, 1.05rem)",
@@ -195,7 +195,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             fontWeight: 500,
             maxWidth: "90%"
           }}>
-            Experience premium, emission-free electric rides designed for Uyo's modern lifestyle.
+            Experience safe, affordable, and comfortable town rides anywhere in Uyo.
           </p>
 
           {/* Value Cards instead of basic Pills */}

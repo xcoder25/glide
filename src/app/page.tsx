@@ -41,9 +41,9 @@ function getKmDistance(loc1: LocationData, loc2: LocationData) {
 }
 
 const SEED_HISTORY: RideRecord[] = [
-  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", fare: 3800, distance: 8, category: "Glide Comfort", driverName: "Marcus Sterling", rating: 5, status: "completed" },
-  { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", fare: 2500, distance: 12, category: "Glide Executive", driverName: "Chidi Obi", rating: 4, status: "completed" },
-  { id: "r3", date: "June 24, 7:30 PM", pickup: "Uyo Central Market", dropoff: "Godswill Akpabio Stadium", fare: 0, distance: 4, category: "Glide Standard", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
+  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", fare: 3800, distance: 8, category: "Glide Ride", driverName: "Marcus Sterling", rating: 5, status: "completed" },
+  { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", fare: 2500, distance: 12, category: "Glide Premium", driverName: "Chidi Obi", rating: 4, status: "completed" },
+  { id: "r3", date: "June 24, 7:30 PM", pickup: "Uyo Central Market", dropoff: "Godswill Akpabio Stadium", fare: 0, distance: 4, category: "Glide Lite", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
 ];
 
 const SEED_TRANSACTIONS: WalletTransaction[] = [

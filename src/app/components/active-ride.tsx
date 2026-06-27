@@ -118,9 +118,9 @@ export default function ActiveRide({
       case "arriving":
         return { title: "Driver is arriving", desc: "Marcus is on his way to your pickup location" };
       case "arrived":
-        return { title: "Driver has arrived", desc: "Your Tesla Model S Plaid is outside" };
+        return { title: "Driver has arrived", desc: "Your Toyota Corolla is outside" };
       case "inprogress":
-        return { title: "Heading to destination", desc: "Enjoy your comfortable electric ride" };
+        return { title: "Heading to destination", desc: "Enjoy your comfortable premium ride" };
       case "completed":
         return { title: "Trip completed", desc: "Thank you for riding with Glide!" };
     }
@@ -403,7 +403,7 @@ export default function ActiveRide({
             {/* Car specifications */}
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-main)" }}>
-                Tesla Model S Plaid
+                Toyota Corolla
               </div>
               <div
                 style={{

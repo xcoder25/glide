@@ -247,7 +247,7 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null }: 
             scaledSize: new googleMaps.Size(36, 36),
             anchor: new googleMaps.Point(18, 18),
           },
-          title: "Marcus Sterling (Tesla)",
+          title: "Marcus Sterling (Toyota Corolla)",
         });
       } else {
         driverMarkerRef.current.setPosition(position);

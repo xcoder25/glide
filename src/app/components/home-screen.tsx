@@ -179,7 +179,7 @@ export default function HomeScreen({
           ...prev,
           {
             sender: "ai",
-            text: `📊 **Receipt Intelligence**: You spent ₦12,100 across 2 completed rides this month (average ₦4,033 per trip). You saved 28.4 kg of CO₂ emissions using our efficient fleet.`
+            text: `📊 **Receipt Intelligence**: You spent ₦12,100 across 2 completed rides this month (average ₦4,033 per trip). You're averaging 10 km per trip across Uyo.`
           }
         ]);
         return;
