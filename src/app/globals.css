@@ -106,7 +106,7 @@ body {
   }
   .control-panel {
     position: relative !important;
-    width: 440px !important;
+    width: clamp(380px, 30vw, 480px) !important;
     height: 100%;
     border-radius: 0 !important;
     border-right: 1px solid var(--card-border) !important;
@@ -144,12 +144,12 @@ body {
     left: 0;
     right: 0;
     width: 100% !important;
-    border-radius: 32px 32px 0 0 !important;
+    border-radius: 28px 28px 0 0 !important;
     border-left: none !important;
     border-right: none !important;
     border-bottom: none !important;
-    max-height: 85vh;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
+    max-height: 88vh;
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.10);
   }
   
   .drag-handle-container {
@@ -229,7 +229,7 @@ body {
   gap: 10px;
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.88rem, 2vw, 0.95rem);
   padding: 14px 24px;
   border-radius: var(--radius-md);
   border: none;
@@ -239,6 +239,7 @@ body {
   width: 100%;
   position: relative;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 
 .btn-primary {
@@ -657,10 +658,10 @@ body {
 
 /* ── OTP Input ── */
 .otp-input {
-  width: 52px;
-  height: 60px;
+  width: clamp(44px, 13vw, 56px);
+  height: clamp(52px, 14vw, 64px);
   text-align: center;
-  font-size: 1.4rem;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
   font-weight: 800;
   border: 2px solid var(--card-border);
   border-radius: 14px;
@@ -766,3 +767,109 @@ body {
 [data-theme="dark"] .modal-overlay {
   background: rgba(0,0,0,0.7);
 }
+
+/* ── Screen Content Padding (consistent inner spacing) ── */
+.screen-content {
+  padding: clamp(16px, 4vw, 28px) clamp(16px, 5vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 24px);
+}
+
+/* ── Elevated Card (premium shadow card) ── */
+.card-elevated {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease, transform 0.25s ease;
+}
+[data-theme="dark"] .card-elevated {
+  background: rgba(25, 18, 10, 0.92) !important;
+}
+.card-elevated:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.10);
+}
+
+/* ── Section Header ── */
+.section-header {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Input Label ── */
+.input-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ── Primary input with glow focus ── */
+.input-premium {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--card-border-focus);
+  border-radius: var(--radius-md);
+  font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+  font-family: var(--font-sans);
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.85);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.input-premium:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+[data-theme="dark"] .input-premium {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-main) !important;
+}
+
+/* ── Status Pill ── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ── Full height filler ── */
+.fill { flex: 1; }
+
+/* ── Spacing helpers ── */
+.mt-auto { margin-top: auto; }
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+
+/* ── Large screen enhancements ── */
+@media (min-width: 1280px) {
+  .control-panel {
+    width: clamp(420px, 28vw, 520px) !important;
+  }
+}
+
+/* ── Extra small screen safety ── */
+@media (max-width: 360px) {
+  .btn {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+  .modal-sheet {
+    padding: 20px 16px 32px 16px;
+  }
+}
+

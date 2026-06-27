@@ -22,10 +22,10 @@ import NotificationsPanel from "./components/notifications-panel";
 const GlideMap = dynamic(() => import("./components/map"), {
   ssr: false,
   loading: () => (
-    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#070a13", color: "rgba(255,255,255,0.4)" }}>
+    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #0d1117 0%, #161b22 100%)", color: "rgba(255,255,255,0.4)" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 32, height: 32, border: "3px solid rgba(217,95,0,0.4)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s infinite linear", margin: "0 auto 12px auto" }} />
-        <span style={{ fontSize: "0.85rem" }}>Loading map...</span>
+        <div style={{ width: 36, height: 36, border: "3px solid rgba(217,95,0,0.3)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s infinite linear", margin: "0 auto 14px auto" }} />
+        <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Loading Uyo map...</span>
       </div>
     </div>
   ),
@@ -41,13 +41,13 @@ function getKmDistance(loc1: LocationData, loc2: LocationData) {
 }
 
 const SEED_HISTORY: RideRecord[] = [
-  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ikeja City Mall", dropoff: "Lekki Conservation Centre", fare: 6800, distance: 18, category: "Glide Comfort", driverName: "Marcus Sterling", rating: 5, status: "completed" },
-  { id: "r2", date: "June 26, 9:04 AM", pickup: "Eko Hotels & Suites", dropoff: "MMIA Airport", fare: 12500, distance: 24, category: "Glide Executive", driverName: "Chidi Obi", rating: 4, status: "completed" },
-  { id: "r3", date: "June 24, 7:30 PM", pickup: "UNILAG", dropoff: "National Theatre", fare: 0, distance: 8, category: "Glide Standard", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
+  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", fare: 3800, distance: 8, category: "Glide Comfort", driverName: "Marcus Sterling", rating: 5, status: "completed" },
+  { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", fare: 2500, distance: 12, category: "Glide Executive", driverName: "Chidi Obi", rating: 4, status: "completed" },
+  { id: "r3", date: "June 24, 7:30 PM", pickup: "Uyo Central Market", dropoff: "Godswill Akpabio Stadium", fare: 0, distance: 4, category: "Glide Standard", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
 ];
 
 const SEED_TRANSACTIONS: WalletTransaction[] = [
-  { id: "tx1", date: "Yesterday", description: "Ride Payment — Ikeja → Lekki", amount: 6800, type: "debit" },
+  { id: "tx1", date: "Yesterday", description: "Ride Payment — Ibom Plaza → Airport", amount: 3800, type: "debit" },
   { id: "tx2", date: "June 26", description: "Wallet Top-up", amount: 20000, type: "credit" },
   { id: "tx3", date: "June 24", description: "Promo Bonus — WELCOME", amount: 500, type: "credit" },
 ];
@@ -325,15 +325,18 @@ export default function Home() {
 
         {/* Header (shown on home, profile, history, payment, settings views) */}
         {(currentView === "home" || currentView === "profile" || currentView === "history" || currentView === "payment" || currentView === "settings") && (
-          <header style={{ padding: "16px 24px", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <header style={{ padding: "clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {/* Logo */}
-              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(217,95,0,0.25)" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "11px", background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(217,95,0,0.28)" }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
               </div>
-              <span style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Glide</span>
+              <div>
+                <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em", display: "block", lineHeight: 1 }}>Glide</span>
+                <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.05em" }}>UYO · AKWA IBOM</span>
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -341,7 +344,7 @@ export default function Home() {
               <div style={{ position: "relative" }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--background)", zIndex: 1 }} />
                 <button
-                  style={{ width: 34, height: 34, border: "1px solid var(--card-border)", borderRadius: "10px", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}
+                  style={{ width: 36, height: 36, border: "1px solid var(--card-border)", borderRadius: "11px", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", transition: "all 0.2s" }}
                   onClick={() => setShowNotifications(true)}
                   title="Notifications"
                 >
@@ -353,7 +356,7 @@ export default function Home() {
               {/* Avatar */}
               <button
                 onClick={() => setCurrentView("profile")}
-                style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), var(--accent))", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 800, color: "#fff", fontFamily: "var(--font-sans)" }}
+                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), var(--accent))", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 800, color: "#fff", fontFamily: "var(--font-sans)", boxShadow: "0 2px 8px rgba(217,95,0,0.25)" }}
                 title="Profile"
               >
                 {userProfile.fullName.charAt(0).toUpperCase()}

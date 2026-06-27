@@ -301,7 +301,7 @@ export default function ActiveRide({
               <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--accent)" }}>Active</span>
             </div>
             <p style={{ fontSize: "0.78rem", color: "var(--text-main)", lineHeight: 1.5, fontWeight: 500 }}>
-              ⚠️ Minor deviation detected: Driver bypassed Third Mainland Bridge to avoid standstill traffic on Eko Bridge. Security monitoring is active.
+              ⚠️ Minor deviation detected: Driver bypassed Ikot Ekpene Road to avoid temporary construction traffic near Ibom Plaza. Security monitoring is active.
             </p>
             <button
               onClick={() => alert("📍 Live trip link copied! Share with your emergency contact.")}
@@ -334,7 +334,7 @@ export default function ActiveRide({
               <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Smart ETA</span>
             </div>
             <p style={{ fontSize: "0.78rem", color: "var(--text-main)", lineHeight: 1.5, fontWeight: 500 }}>
-              Heavy rain is slowing traffic along Carter Bridge. Arrival updated to <strong>{eta + 4} min</strong> (+4 min delay). Driver is taking Ozumba Mbadiwe as alternate route.
+              Heavy rain is slowing traffic along Oron Road. Arrival updated to <strong>{eta + 3} min</strong> (+3 min delay). Driver is taking Nwaniba Road as alternate route.
             </p>
           </div>
         </div>

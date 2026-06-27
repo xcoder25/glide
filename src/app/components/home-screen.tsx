@@ -39,6 +39,8 @@ export default function HomeScreen({
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
 
+  const UYO_CENTER: LocationData = { name: "Uyo City Centre", lat: 5.0301, lng: 7.9273, address: "Uyo, Akwa Ibom State" };
+
   const parseAIIntent = (input: string) => {
     const text = input.trim().toLowerCase();
     if (!text) return;
@@ -48,14 +50,14 @@ export default function HomeScreen({
 
     setTimeout(() => {
       // 1. Airport Booking Intent
-      if (text.includes("airport") || text.includes("mmia") || text.includes("flight")) {
-        const dropoff = PRESET_LOCATIONS[0]; // MMIA Airport
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+      if (text.includes("airport") || text.includes("flight")) {
+        const dropoff = PRESET_LOCATIONS[0]; // Akwa Ibom Airport
+        const pickupLoc = deviceLocation || UYO_CENTER;
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `✈️ Preparing your Airport Run! Setting destination to Murtala Muhammed Airport (MMIA). Let's choose your ride.`,
+            text: `✈️ Preparing your Airport Run! Setting destination to Akwa Ibom Airport. Let's choose your ride.`,
             action: (
               <button
                 className="btn btn-primary"
@@ -72,20 +74,20 @@ export default function HomeScreen({
 
       // 2. Points of Interest
       if (text.includes("atm") || text.includes("bank") || text.includes("cash")) {
-        const dest: LocationData = { name: "GTBank ATM", lat: 6.4290, lng: 3.4230, address: "Adetokunbo Ademola St, Victoria Island, Lagos" };
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+        const dest: LocationData = { name: "UBA Uyo Branch", lat: 5.0290, lng: 7.9240, address: "Abak Rd, Uyo, Akwa Ibom" };
+        const pickupLoc = deviceLocation || UYO_CENTER;
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `🏧 I found a GTBank ATM just 200m away on Adetokunbo Ademola St. Would you like to book a ride there?`,
+            text: `🏧 Found UBA Uyo Branch on Abak Rd, just 3 minutes away. Book a ride there?`,
             action: (
               <button
                 className="btn btn-primary"
                 style={{ padding: "8px 14px", fontSize: "0.78rem", borderRadius: "10px", marginTop: "6px" }}
                 onClick={() => onStartBooking(pickupLoc, dest)}
               >
-                Book Ride to ATM
+                Book Ride to Bank
               </button>
             )
           }
@@ -94,13 +96,13 @@ export default function HomeScreen({
       }
 
       if (text.includes("hospital") || text.includes("clinic") || text.includes("doctor") || text.includes("medical")) {
-        const dest: LocationData = { name: "St. Nicholas Hospital", lat: 6.4526, lng: 3.4026, address: "57 Campbell St, Lagos Island, Lagos" };
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+        const dest: LocationData = PRESET_LOCATIONS.find(l => l.name.includes("Hospital")) || { name: "Ibom Specialist Hospital", lat: 5.0218, lng: 7.9418, address: "Itam, Uyo, Akwa Ibom State" };
+        const pickupLoc = deviceLocation || UYO_CENTER;
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `🏥 St. Nicholas Hospital is 3.1 km away. Traffic is normal along Campbell St. Ready to book?`,
+            text: `🏥 Ibom Specialist Hospital is nearby in Itam. Traffic is normal. Ready to book?`,
             action: (
               <button
                 className="btn btn-accent"
@@ -116,13 +118,13 @@ export default function HomeScreen({
       }
 
       if (text.includes("pharmacy") || text.includes("drug") || text.includes("medication")) {
-        const dest: LocationData = { name: "HealthPlus Pharmacy", lat: 6.5980, lng: 3.3550, address: "Obafemi Awolowo Way, Ikeja, Lagos" };
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+        const dest: LocationData = { name: "HealthPlus Pharmacy Uyo", lat: 5.0315, lng: 7.9250, address: "Abak Road, Uyo, Akwa Ibom" };
+        const pickupLoc = deviceLocation || UYO_CENTER;
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `💊 Found HealthPlus Pharmacy on Obafemi Awolowo Way. Let's arrange a ride.`,
+            text: `💊 Found HealthPlus Pharmacy on Abak Road, Uyo. Let's arrange a ride.`,
             action: (
               <button
                 className="btn btn-primary"
@@ -138,13 +140,13 @@ export default function HomeScreen({
       }
 
       if (text.includes("restaurant") || text.includes("eat") || text.includes("food") || text.includes("dinner")) {
-        const dest: LocationData = { name: "Nok by Alara", lat: 6.4300, lng: 3.4260, address: "12a Akin Olugbade St, Victoria Island, Lagos" };
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+        const dest: LocationData = { name: "Ibom Icon Hotel & Suites", lat: 5.0112, lng: 7.9491, address: "Nwaniba Road, Uyo, Akwa Ibom" };
+        const pickupLoc = deviceLocation || UYO_CENTER;
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `🍽️ NOK by Alara (Contemporary African Fine Dining) is nearby in VI. Shall I book your ride?`,
+            text: `🍽️ Ibom Icon Hotel has excellent dining experiences. Shall I book your ride there?`,
             action: (
               <button
                 className="btn btn-primary"
@@ -165,7 +167,7 @@ export default function HomeScreen({
           ...prev,
           {
             sender: "ai",
-            text: `💰 Our most cost-efficient option is Glide Standard (₦1,200 base rate + ₦350/km). Let's set your route to apply this rate.`
+            text: `💰 Our most cost-efficient option is Glide Standard (₦800 base rate + ₦200/km). Let's set your route to apply this rate.`
           }
         ]);
         return;
@@ -177,7 +179,7 @@ export default function HomeScreen({
           ...prev,
           {
             sender: "ai",
-            text: `📊 **Receipt Intelligence**: You spent ₦19,300 across 2 completed rides this month (average ₦6,433 per trip). You saved 42.8 kg of CO₂ emissions using our EV fleet.`
+            text: `📊 **Receipt Intelligence**: You spent ₦12,100 across 2 completed rides this month (average ₦4,033 per trip). You saved 28.4 kg of CO₂ emissions using our efficient fleet.`
           }
         ]);
         return;
@@ -188,7 +190,7 @@ export default function HomeScreen({
         ...prev,
         {
           sender: "ai",
-          text: `🔍 I can search landmarks like "Airport", "ATM", "Hospital", or explain "Cheapest ride" or "Receipt stats".`
+          text: `🔍 I can search places like "Airport", "Hospital", "Bank", or explain "Cheapest ride" or "Budget stats".`
         }
       ]);
     }, 1000);
@@ -206,19 +208,19 @@ export default function HomeScreen({
       setCopilotText("");
       
       setTimeout(() => {
-        const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
+        const pickupLoc = deviceLocation || UYO_CENTER;
         const homeLoc: LocationData = {
           name: "Home",
-          lat: 6.4423,
-          lng: 3.5350,
-          address: "Lekki-Epe Expressway, Lekki, Lagos"
+          lat: 5.0450,
+          lng: 7.9320,
+          address: "Ewet Housing Estate, Uyo, Akwa Ibom"
         };
         
         setChatHistory(prev => [
           ...prev,
           {
             sender: "ai",
-            text: `🏡 Voice Booking recognized! Set destination: Home (Lekki). Estimated Standard fare: ₦2,200. Confirm booking?`,
+            text: `🏡 Voice Booking recognized! Destination: Home (Ewet Housing, Uyo). Estimated Standard fare: ₦1,200. Confirm?`,
             action: (
               <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                 <button
@@ -312,15 +314,15 @@ export default function HomeScreen({
               Ready for your morning office ride?
             </p>
             <p style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginTop: "2px", lineHeight: 1.45 }}>
-              You usually head to Yaba (UNILAG) around 8:15 AM. Traffic is heavier today on Herbert Macaulay Way. Leaving 15 minutes earlier is advised.
+              You usually head to UNIUYO (Ikpa Road) around 8:15 AM. Traffic is moderate on Abak Road today. Leaving 10 minutes earlier is advised.
             </p>
             <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
               <button
                 className="btn btn-primary"
                 style={{ padding: "6px 14px", fontSize: "0.72rem", borderRadius: "8px" }}
                 onClick={() => {
-                  const pickupLoc = deviceLocation || { name: "Current Location", lat: 6.4281, lng: 3.4219, address: "Victoria Island, Lagos" };
-                  const targetWork = favoriteWork || { name: "University of Lagos (UNILAG)", lat: 6.5181, lng: 3.3989, address: "Yaba, Lagos, Nigeria" };
+                  const pickupLoc = deviceLocation || { name: "Current Location", lat: 5.0301, lng: 7.9273, address: "Uyo, Akwa Ibom State" };
+                  const targetWork = favoriteWork || { name: "University of Uyo (UNIUYO)", lat: 5.0419, lng: 7.9238, address: "Ikpa Road, Uyo, Akwa Ibom" };
                   onStartBooking(pickupLoc, targetWork);
                 }}
               >
@@ -345,15 +347,35 @@ export default function HomeScreen({
       )}
 
       {/* Header */}
-      <div style={{ padding: "28px 24px 0 24px" }}>
-        <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 500 }}>{greeting} 👋</p>
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em", marginTop: "2px" }}>
+      <div style={{ padding: "clamp(20px, 5vw, 32px) clamp(16px, 5vw, 28px) 0" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+          <p style={{ fontSize: "clamp(0.82rem, 2.5vw, 0.9rem)", color: "var(--text-muted)", fontWeight: 500 }}>{greeting} 👋</p>
+          <span style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px",
+            padding: "4px 10px",
+            background: "rgba(217,95,0,0.08)",
+            border: "1px solid rgba(217,95,0,0.18)",
+            borderRadius: "99px",
+            fontSize: "0.65rem",
+            fontWeight: 800,
+            color: "var(--primary)",
+            letterSpacing: "0.04em",
+          }}>
+            📍 Uyo, AKS
+          </span>
+        </div>
+        <h2 style={{ fontSize: "clamp(1.4rem, 5vw, 1.8rem)", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.03em", lineHeight: 1.1, marginTop: "4px" }}>
           Where to, <span style={{ color: "var(--primary)" }}>{userName.split(" ")[0]}</span>?
         </h2>
+        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "6px", fontWeight: 500 }}>
+          Rides across Uyo & Akwa Ibom State
+        </p>
       </div>
 
       {/* Search Bar */}
-      <div style={{ padding: "16px 24px 0 24px", position: "relative" }}>
+      <div style={{ padding: "14px clamp(16px, 5vw, 28px) 0", position: "relative" }}>
         <div
           style={{
             display: "flex",
@@ -375,7 +397,7 @@ export default function HomeScreen({
             onChange={e => setSearchText(e.target.value)}
             onFocus={() => searchText.length > 0 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            placeholder="Search destination in Lagos..."
+            placeholder="Search destination in Uyo..."
             style={{
               flex: 1,
               border: "none",
@@ -460,15 +482,15 @@ export default function HomeScreen({
       </div>
 
       {/* Current Location Button */}
-      <div style={{ padding: "12px 24px 0 24px" }}>
+      <div style={{ padding: "10px clamp(16px, 5vw, 28px) 0" }}>
         <button
           onClick={() =>
             onStartBooking(
               deviceLocation || {
                 name: "My Location",
-                lat: 6.4281,
-                lng: 3.4219,
-                address: "Victoria Island, Lagos",
+                lat: 5.0301,
+                lng: 7.9273,
+                address: "Uyo, Akwa Ibom State",
               }
             )
           }
@@ -493,7 +515,7 @@ export default function HomeScreen({
         </button>
       </div>
 
-      <div style={{ padding: "24px 24px 0 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={{ padding: "clamp(16px, 4vw, 24px) clamp(16px, 5vw, 28px) 0", display: "flex", flexDirection: "column", gap: "clamp(16px, 3vw, 24px)" }}>
         {/* Quick Destinations */}
         <div>
           <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>
@@ -728,20 +750,31 @@ export default function HomeScreen({
         )}
 
         {/* Loyalty Status */}
-        <div style={{ padding: "16px 18px", background: "rgba(255,255,255,0.5)", border: "1px solid var(--card-border)", borderRadius: "16px", marginBottom: "80px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Star size={14} fill="var(--primary)" stroke="var(--primary)" />
-              <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-main)" }}>Glide Emerald Club</span>
+        <div style={{
+          padding: "clamp(14px, 3vw, 20px) clamp(14px, 3vw, 20px)",
+          background: "linear-gradient(135deg, rgba(217,95,0,0.06) 0%, rgba(26,107,60,0.06) 100%)",
+          border: "1.5px solid rgba(217,95,0,0.15)",
+          borderRadius: "20px",
+          marginBottom: "clamp(72px, 12vw, 96px)",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), var(--accent))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Star size={14} fill="#fff" stroke="#fff" />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--text-main)", display: "block" }}>Glide Loyalty Club</span>
+                <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>Emerald Member</span>
+              </div>
             </div>
-            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)" }}>Tier 2</span>
+            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--accent)", background: "rgba(26,107,60,0.1)", padding: "3px 10px", borderRadius: "99px", border: "1px solid rgba(26,107,60,0.2)" }}>Tier 2</span>
           </div>
-          <div style={{ width: "100%", height: "4px", background: "rgba(0,0,0,0.05)", borderRadius: "99px", overflow: "hidden" }}>
-            <div style={{ width: "78%", height: "100%", background: "linear-gradient(90deg, var(--primary), var(--accent))", borderRadius: "99px" }} />
+          <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.06)", borderRadius: "99px", overflow: "hidden" }}>
+            <div style={{ width: "78%", height: "100%", background: "linear-gradient(90deg, var(--primary), var(--accent))", borderRadius: "99px", boxShadow: "0 0 8px rgba(217,95,0,0.35)" }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "6px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "8px", fontWeight: 600 }}>
             <span>780 / 1,000 points</span>
-            <span>220 pts to free ride</span>
+            <span style={{ color: "var(--primary)" }}>220 pts to free ride 🎁</span>
           </div>
         </div>
       </div>

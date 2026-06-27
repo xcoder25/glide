@@ -296,9 +296,9 @@ export default function BookingScreen({
               onClick={() => {
                 const currentLoc: LocationData = deviceLocation || {
                   name: "My Current Location",
-                  lat: 6.4281,
-                  lng: 3.4219,
-                  address: "Victoria Island, Lagos",
+                  lat: 5.0301,
+                  lng: 7.9273,
+                  address: "Uyo, Akwa Ibom State",
                 };
                 setPickup(currentLoc);
               }}

@@ -9,8 +9,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Glide | Premium Ride-Hailing",
-  description: "Experience premium ride-hailing with Glide. Fast, elegant, and secure rides in electric luxury.",
+  title: "Glide Uyo | Premium Ride-Hailing in Akwa Ibom",
+  description: "Glide — Uyo's smartest ride-hailing platform. Fast, safe, and affordable rides across Uyo and Akwa Ibom State.",
 };
 
 export default function RootLayout({

@@ -102,7 +102,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           animation: "splash-fade-up 0.6s ease 0.4s both",
         }}
       >
-        Electric Luxury Mobility
+        Smart Mobility · Uyo
       </p>
 
       {/* Progress bar */}

@@ -10,16 +10,18 @@ export interface LocationData {
   address: string;
 }
 
-// Preset locations in New York City for the simulation
+// Preset locations in Uyo, Akwa Ibom State
 export const PRESET_LOCATIONS: LocationData[] = [
-  { name: "Murtala Muhammed Airport (MMIA)", lat: 6.5774, lng: 3.3210, address: "Ikeja, Lagos, Nigeria" },
-  { name: "Lekki Conservation Centre", lat: 6.4423, lng: 3.5350, address: "Lekki-Epe Expressway, Lekki, Lagos" },
-  { name: "Ikeja City Mall (ICM)", lat: 6.5974, lng: 3.3542, address: "Obafemi Awolowo Way, Ikeja, Lagos" },
-  { name: "Eko Hotels & Suites", lat: 6.4276, lng: 3.4246, address: "Plot 1415 Adetokunbo Ademola St, VI, Lagos" },
-  { name: "Civic Centre", lat: 6.4312, lng: 3.4155, address: "Ozumba Mbadiwe Rd, Victoria Island, Lagos" },
-  { name: "National Theatre", lat: 6.4674, lng: 3.3695, address: "Iganmu, Surulere, Lagos" },
-  { name: "Lekki Toll Gate", lat: 6.4374, lng: 3.4428, address: "Lekki-Ikoyi Link Bridge, Lekki, Lagos" },
-  { name: "University of Lagos (UNILAG)", lat: 6.5181, lng: 3.3989, address: "Yaba, Lagos, Nigeria" },
+  { name: "Akwa Ibom Airport", lat: 5.0273, lng: 7.9961, address: "Airport Road, Uyo, Akwa Ibom State" },
+  { name: "University of Uyo (UNIUYO)", lat: 5.0419, lng: 7.9238, address: "Ikpa Road, Uyo, Akwa Ibom State" },
+  { name: "Uyo City Mall", lat: 5.0277, lng: 7.9262, address: "Abak Road, Uyo, Akwa Ibom State" },
+  { name: "Ibom Plaza", lat: 5.0325, lng: 7.9255, address: "Abak Road, Uyo, Akwa Ibom State" },
+  { name: "Akwa Ibom Government House", lat: 5.0248, lng: 7.9363, address: "Wellington Bassey Way, Uyo" },
+  { name: "Ibom Specialist Hospital", lat: 5.0218, lng: 7.9418, address: "Itam, Uyo, Akwa Ibom State" },
+  { name: "Uyo Central Market", lat: 5.0305, lng: 7.9222, address: "Ekpenyong Ntuk St, Uyo, Akwa Ibom" },
+  { name: "Godswill Akpabio Stadium", lat: 5.0503, lng: 7.9085, address: "Oron Road, Uyo, Akwa Ibom State" },
+  { name: "Ibom Icon Hotel & Golf Resort", lat: 5.0112, lng: 7.9491, address: "Nwaniba Road, Uyo, Akwa Ibom" },
+  { name: "Legacy Polytechnic", lat: 5.0467, lng: 7.8975, address: "Ikot Osurua, Ikot Ekpene Rd, Uyo" },
 ];
 
 interface BookingFormProps {
@@ -123,9 +125,9 @@ export default function BookingForm({ onRouteSelected, onClear }: BookingFormPro
   const handleUseCurrentLocation = () => {
     const currentLoc: LocationData = {
       name: "My Current Location",
-      lat: 6.4281,
-      lng: 3.4219,
-      address: "Victoria Island, Lagos (Simulated)"
+      lat: 5.0301,
+      lng: 7.9273,
+      address: "Uyo, Akwa Ibom State (Simulated)"
     };
     setSelectedPickup(currentLoc);
     setPickupInput(currentLoc.name);

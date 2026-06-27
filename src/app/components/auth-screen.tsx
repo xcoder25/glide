@@ -133,7 +133,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "32px 28px",
+        padding: "clamp(24px, 6vw, 48px) clamp(20px, 6vw, 40px)",
         background: "var(--bg-gradient)",
         position: "relative",
         overflow: "hidden",
@@ -158,13 +158,13 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           </div>
           <div style={{ textAlign: "center" }}>
             <h1 style={{ fontSize: "2.8rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.03em", lineHeight: 1 }}>Glide</h1>
-            <p style={{ fontSize: "1rem", color: "var(--text-muted)", marginTop: "6px", fontWeight: 500 }}>Lagos Smart Mobility Platform</p>
+            <p style={{ fontSize: "1rem", color: "var(--text-muted)", marginTop: "6px", fontWeight: 500 }}>Uyo Smart Mobility Platform</p>
           </div>
         </div>
 
         {/* Feature Pills */}
         <div className="animate-slide-up" style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center", marginBottom: "48px" }}>
-          {["🚗 Fast Rides", "🔒 Secure", "₦ Fair Fares", "📍 Real-time"].map(tag => (
+          {["🚗 Fast Rides", "🔒 Verified Drivers", "₦ Fair Fares", "📍 Uyo & Beyond"].map(tag => (
             <span key={tag} style={{
               padding: "6px 14px",
               background: "rgba(217,95,0,0.08)",
@@ -332,7 +332,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // ─────────────── LOGIN ───────────────
   if (view === "login") {
     return (
-      <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 28px 32px" }}>
+      <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "clamp(40px, 8vw, 72px) clamp(20px, 6vw, 36px) clamp(24px, 5vw, 40px)" }}>
         <button onClick={() => go("welcome")} style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}>
           <ArrowLeft size={16} /> Back
         </button>
@@ -411,7 +411,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
   // ─────────────── SIGN UP ───────────────
   return (
-    <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 28px 32px" }}>
+    <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "clamp(40px, 8vw, 72px) clamp(20px, 6vw, 36px) clamp(24px, 5vw, 40px)" }}>
       <button
         onClick={() => { if (signupStep > 1) { setSignupStep(1); setError(""); } else go("welcome"); }}
         style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}

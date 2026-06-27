@@ -60,7 +60,7 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null }: 
     if (!googleMapsLoaded || !mapRef.current || mapInstanceRef.current) return;
 
     const googleMaps = (window as any).google.maps;
-    const defaultCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
+    const defaultCenter = { lat: 5.0301, lng: 7.9273 }; // Uyo, Nigeria
     const center = deviceLocation ? { lat: deviceLocation.lat, lng: deviceLocation.lng } : defaultCenter;
 
     mapInstanceRef.current = new googleMaps.Map(mapRef.current, {
