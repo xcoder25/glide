@@ -131,76 +131,127 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "clamp(24px, 6vw, 48px) clamp(20px, 6vw, 40px)",
+        justifyContent: "space-between",
+        padding: "clamp(24px, 5vw, 40px) clamp(16px, 4vw, 32px)",
         background: "var(--bg-gradient)",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Background decorations */}
-        <div style={{ position: "absolute", top: "15%", right: "-10%", width: 260, height: 260, borderRadius: "50%", background: "rgba(217,95,0,0.07)", filter: "blur(60px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "10%", left: "-10%", width: 200, height: 200, borderRadius: "50%", background: "rgba(26,107,60,0.08)", filter: "blur(50px)", pointerEvents: "none" }} />
+        {/* Abstract Gradient Glowing Orbs */}
+        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "70vw", height: "70vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(217,95,0,0.12) 0%, transparent 70%)", filter: "blur(40px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "20%", right: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(26,107,60,0.14) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
 
-        {/* Logo */}
-        <div className="animate-slide-up" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", marginBottom: "56px" }}>
-          <div style={{
-            width: 80,
-            height: 80,
-            borderRadius: "24px",
-            background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 16px 48px rgba(217,95,0,0.35)",
-          }}>
-            <Zap size={40} color="#fff" strokeWidth={2.5} />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <h1 style={{ fontSize: "2.8rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.03em", lineHeight: 1 }}>Glide</h1>
-            <p style={{ fontSize: "1rem", color: "var(--text-muted)", marginTop: "6px", fontWeight: 500 }}>Uyo Smart Mobility Platform</p>
-          </div>
-        </div>
-
-        {/* Feature Pills */}
-        <div className="animate-slide-up" style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center", marginBottom: "48px" }}>
-          {["🚗 Fast Rides", "🔒 Verified Drivers", "₦ Fair Fares", "📍 Uyo & Beyond"].map(tag => (
-            <span key={tag} style={{
-              padding: "6px 14px",
-              background: "rgba(217,95,0,0.08)",
-              border: "1px solid rgba(217,95,0,0.15)",
-              borderRadius: "99px",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              color: "var(--primary)",
+        {/* Top Header - Logo & City Indicator */}
+        <div className="animate-slide-up" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", zIndex: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{
+              width: 38,
+              height: 38,
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 14px rgba(217,95,0,0.25)",
             }}>
-              {tag}
-            </span>
-          ))}
+              <Zap size={18} color="#fff" strokeWidth={2.5} />
+            </div>
+            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.03em" }}>Glide</span>
+          </div>
+          <span style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px",
+            padding: "5px 12px",
+            background: "rgba(26,107,60,0.08)",
+            border: "1px solid rgba(26,107,60,0.18)",
+            borderRadius: "99px",
+            fontSize: "0.68rem",
+            fontWeight: 800,
+            color: "var(--accent)",
+            letterSpacing: "0.04em",
+          }}>
+            📍 Uyo Premium
+          </span>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="animate-slide-up" style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: "12px" }}>
+        {/* Center Section: Beautiful Hero Typography & Premium Cards */}
+        <div className="animate-slide-up" style={{ margin: "auto 0", zIndex: 10, textAlign: "left", width: "100%", maxWidth: 440, padding: "20px 0" }}>
+          <h2 style={{
+            fontSize: "clamp(2.2rem, 8vw, 3.2rem)",
+            fontWeight: 900,
+            lineHeight: 1.05,
+            color: "var(--text-main)",
+            letterSpacing: "-0.04em"
+          }}>
+            Luxury travel, <br />
+            made <span style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>simple.</span>
+          </h2>
+          <p style={{
+            fontSize: "clamp(0.95rem, 3.5vw, 1.05rem)",
+            color: "var(--text-muted)",
+            marginTop: "16px",
+            lineHeight: 1.5,
+            fontWeight: 500,
+            maxWidth: "90%"
+          }}>
+            Experience premium, emission-free electric rides designed for Uyo's modern lifestyle.
+          </p>
+
+          {/* Value Cards instead of basic Pills */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "32px" }}>
+            <div style={{ padding: "14px", background: "rgba(255,255,255,0.45)", border: "1px solid rgba(0,0,0,0.04)", borderRadius: "16px", backdropFilter: "blur(8px)" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(217,95,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", marginBottom: "10px" }}>⚡</div>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>Instant Rides</p>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>Avg. wait time under 4 min</p>
+            </div>
+            <div style={{ padding: "14px", background: "rgba(255,255,255,0.45)", border: "1px solid rgba(0,0,0,0.04)", borderRadius: "16px", backdropFilter: "blur(8px)" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(26,107,60,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)", marginBottom: "10px" }}>🛡️</div>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>Verified Safety</p>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>AI companion routes</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section: Premium Button Sheet */}
+        <div className="animate-slide-up" style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "14px", marginTop: "auto" }}>
           <button
             onClick={() => go("signup")}
             className="btn btn-primary"
-            style={{ padding: "16px", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}
+            style={{
+              padding: "16px",
+              fontSize: "0.95rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+              boxShadow: "0 8px 30px rgba(217,95,0,0.25)",
+            }}
           >
-            <Zap size={20} /> Get Started Free
+            <span>Create Account</span> <ArrowRight size={16} />
           </button>
+          
           <button
             onClick={() => go("login")}
             className="btn btn-secondary"
-            style={{ padding: "16px", fontSize: "1rem" }}
+            style={{
+              padding: "16px",
+              fontSize: "0.95rem",
+              background: "rgba(255,255,255,0.6)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(0,0,0,0.08)",
+              color: "var(--text-main)",
+            }}
           >
             I already have an account
           </button>
-        </div>
 
-        <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "24px", textAlign: "center" }}>
-          By continuing you agree to our <span style={{ color: "var(--primary)", fontWeight: 600 }}>Terms of Service</span> &{" "}
-          <span style={{ color: "var(--primary)", fontWeight: 600 }}>Privacy Policy</span>
-        </p>
+          <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
+            By getting started, you agree to our <br />
+            <span style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer" }}>Terms of Service</span> & <span style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer" }}>Privacy Policy</span>
+          </p>
+        </div>
       </div>
     );
   }
