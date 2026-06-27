@@ -148,6 +148,64 @@ export default function Home() {
     language: "English",
   });
 
+  // ── Mobile Bottom Sheet Drag State ──
+  const [sheetHeight, setSheetHeight] = useState(420);
+  const [isDraggingSheet, setIsDraggingSheet] = useState(false);
+  const dragStartY = React.useRef(0);
+  const dragStartHeight = React.useRef(0);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth <= 768) {
+        setSheetHeight(Math.round(window.innerHeight * 0.50));
+      }
+    }
+  }, [currentView]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (typeof window === "undefined" || window.innerWidth > 768) return;
+    setIsDraggingSheet(true);
+    dragStartY.current = e.touches[0].clientY;
+    dragStartHeight.current = sheetHeight;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDraggingSheet) return;
+    const clientY = e.touches[0].clientY;
+    const deltaY = dragStartY.current - clientY;
+    const maxH = Math.round(window.innerHeight * 0.88);
+    const minH = 220;
+    const newH = Math.max(minH, Math.min(maxH, dragStartHeight.current + deltaY));
+    setSheetHeight(newH);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDraggingSheet(false);
+    if (typeof window === "undefined") return;
+    const snapMin = 260;
+    const snapDefault = Math.round(window.innerHeight * 0.50);
+    const snapMax = Math.round(window.innerHeight * 0.88);
+
+    const diffs = [
+      { val: snapMin, diff: Math.abs(sheetHeight - snapMin) },
+      { val: snapDefault, diff: Math.abs(sheetHeight - snapDefault) },
+      { val: snapMax, diff: Math.abs(sheetHeight - snapMax) },
+    ];
+    diffs.sort((a, b) => a.diff - b.diff);
+    setSheetHeight(diffs[0].val);
+  };
+
+  const handleDragHandleClick = () => {
+    if (typeof window === "undefined") return;
+    const snapDefault = Math.round(window.innerHeight * 0.50);
+    const snapMax = Math.round(window.innerHeight * 0.88);
+    if (sheetHeight < snapMax - 50) {
+      setSheetHeight(snapMax);
+    } else {
+      setSheetHeight(snapDefault);
+    }
+  };
+
   // ── Dark Mode Effect ──
   useEffect(() => {
     const html = document.documentElement;
@@ -317,9 +375,22 @@ export default function Home() {
       </div>
 
       {/* Control Panel */}
-      <div className="control-panel">
+      <div 
+        className="control-panel"
+        style={{
+          height: typeof window !== "undefined" && window.innerWidth <= 768 ? `${sheetHeight}px` : undefined,
+          transition: isDraggingSheet ? "none" : "height 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
         {/* Mobile Drag Handle */}
-        <div className="drag-handle-container">
+        <div 
+          className="drag-handle-container"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={handleDragHandleClick}
+          style={{ cursor: "ns-resize" }}
+        >
           <div className="drag-handle-pill" />
         </div>
 

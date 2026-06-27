@@ -539,16 +539,31 @@ export default function BookingScreen({
                 <span style={{ fontSize: "1.15rem", fontWeight: 900, color: "var(--primary)" }}>₦{selectedPrice.toLocaleString()}</span>
               </div>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => setStep("vehicle")} className="btn btn-secondary" style={{ padding: "14px 20px" }}>
+            <div style={{ display: "flex", gap: "8px", flexShrink: 0, width: "100%" }}>
+              <button 
+                onClick={() => setStep("vehicle")} 
+                className="btn btn-secondary" 
+                style={{ padding: "14px 20px", flexShrink: 0, width: "auto" }}
+              >
                 <ArrowLeft size={16} /> Edit
               </button>
               <button
                 onClick={() => { setStep("finding"); setFindingProgress(0); }}
                 className="btn btn-primary"
-                style={{ flex: 1, padding: "15px", fontSize: "0.95rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                style={{ 
+                  flex: 1, 
+                  padding: "14px 18px", 
+                  fontSize: "clamp(0.85rem, 2.4vw, 0.95rem)", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center", 
+                  gap: "8px",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
+                }}
               >
-                <Zap size={18} /> {isScheduled ? "Schedule Ride" : "Confirm Booking"}
+                <Zap size={16} style={{ flexShrink: 0 }} /> 
+                {isScheduled ? "Schedule Ride" : "Confirm Booking"}
               </button>
             </div>
           </>

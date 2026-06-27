@@ -278,13 +278,34 @@ export default function RideSelector({ distanceMiles, promoApplied = null, onBoo
         onClick={() => onBookRide(selectedCategory, totalPrice)}
         className="btn btn-primary"
         style={{
-          fontSize: "1.05rem",
-          padding: "16px",
+          fontSize: "clamp(0.85rem, 2.4vw, 0.95rem)",
+          padding: "14px 18px",
           background: `linear-gradient(135deg, var(--primary) 0%, ${getTierColor(selectedId)} 100%)`,
           boxShadow: `0 8px 30px ${getTierColor(selectedId)}25`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          minHeight: "54px",
         }}
       >
-        Confirm Book {selectedCategory.name} • ₦{totalPrice.toLocaleString()}
+        <span style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <Zap size={16} style={{ flexShrink: 0 }} /> 
+          Confirm {selectedCategory.name}
+        </span>
+        <span style={{ 
+          fontWeight: 800, 
+          background: "rgba(255, 255, 255, 0.22)", 
+          padding: "4px 10px", 
+          borderRadius: "8px",
+          fontSize: "0.85rem",
+          letterSpacing: "0.02em",
+          flexShrink: 0,
+        }}>
+          ₦{totalPrice.toLocaleString()}
+        </span>
       </button>
     </div>
   );
