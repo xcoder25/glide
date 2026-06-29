@@ -128,21 +128,19 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   if (view === "welcome") {
     return (
       <div className="full-screen animate-fade-in" style={{
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         padding: "40px 24px",
         position: "relative",
-        background: "linear-gradient(to bottom, rgba(4, 4, 9, 0.6) 0%, rgba(4, 4, 9, 0.85) 60%, rgba(4, 4, 9, 0.98) 100%), url('/ride.png')",
+        background: "linear-gradient(to bottom, rgba(4, 4, 9, 0.15) 0%, rgba(4, 4, 9, 0.5) 50%, rgba(4, 4, 9, 0.88) 100%), url('/ride.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}>
-        {/* Orbs */}
-        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,107,26,0.1) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "10%", right: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,194,255,0.08) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
-
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", zIndex: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {/* Bottom container */}
+        <div style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "12px" }}>
+          
+          {/* Logo emblem */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
             <div style={{
               width: 38, height: 38, borderRadius: "12px",
               background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
@@ -151,72 +149,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             }}>
               <Zap size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "#ffffff", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
+            <span style={{ fontSize: "1.4rem", fontWeight: 950, color: "#ffffff", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
           </div>
-          <span style={{
-            padding: "5px 14px",
-            background: "var(--primary-dim)",
-            border: "1px solid var(--primary-glow)",
-            borderRadius: "99px",
-            fontSize: "0.68rem",
-            fontWeight: 800,
-            color: "var(--primary)",
-            letterSpacing: "0.04em",
-          }}>
-            📍 Uyo Premium
-          </span>
-        </div>
 
-        {/* Center */}
-        <div style={{ margin: "auto 0", zIndex: 10, width: "100%", maxWidth: 440 }}>
-          <h2 style={{
-            fontSize: "2.6rem",
-            fontWeight: 900,
-            lineHeight: 1.05,
-            color: "#ffffff",
-            fontFamily: "var(--font-display)",
-            letterSpacing: "-0.04em"
-          }}>
-            Fast rides, <br />
-            on <span className="gradient-text">demand.</span>
-          </h2>
-          <p style={{
-            fontSize: "0.95rem",
-            color: "rgba(255, 255, 255, 0.7)",
-            marginTop: "16px",
-            lineHeight: 1.5,
-            fontWeight: 500,
-            maxWidth: "90%"
-          }}>
-            Experience safe, affordable, and comfortable town rides anywhere in Uyo.
-          </p>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "32px" }}>
-            <div className="glass-card" style={{
-              padding: "14px",
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(20px)",
-            }}>
-              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", marginBottom: "10px" }}>⚡</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff" }}>Instant Rides</p>
-              <p style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.6)", marginTop: "2px" }}>Wait time under 4 min</p>
-            </div>
-            <div className="glass-card" style={{
-              padding: "14px",
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(20px)",
-            }}>
-              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--cyan-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--cyan)", marginBottom: "10px" }}>🛡️</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff" }}>Verified Safety</p>
-              <p style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.6)", marginTop: "2px" }}>AI companion routes</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom */}
-        <div style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* Action buttons */}
           <button onClick={() => go("signup")} className="btn btn-primary" style={{ padding: "16px", borderRadius: "var(--r-xl)" }}>
             <span>Create Account</span> <ArrowRight size={16} />
           </button>
