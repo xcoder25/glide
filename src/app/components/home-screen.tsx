@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, MapPin, Navigation, Star, Clock, Zap, Mic, X, Bell, ChevronRight } from "lucide-react";
+import { Search, MapPin, Navigation, Star, Clock, Zap, Mic, X, Bell, ChevronRight, Home, Briefcase, Car } from "lucide-react";
 import { PRESET_LOCATIONS, type LocationData } from "./booking-form";
 import type { RideStatus } from "./active-ride";
 
@@ -189,7 +189,7 @@ export default function HomeScreen({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: "1.1rem", animation: "finding-pulse 1.5s infinite" }}>🚗</span>
+                <Car size={18} style={{ color: "#fff", animation: "finding-pulse 1.5s infinite" }} />
               </div>
               <div style={{ textAlign: "left" }}>
                 <div style={{ fontSize: "0.88rem", fontWeight: 800, color: "#fff" }}>
@@ -309,8 +309,8 @@ export default function HomeScreen({
           {/* Saved Shortcuts */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "20px" }}>
             {[
-              { label: "Home", icon: "🏠", loc: favoriteHome, fallback: { name: "Home", lat: 5.0253, lng: 7.9306, address: "Set your home address" } },
-              { label: "Work", icon: "💼", loc: favoriteWork, fallback: { name: "Work", lat: 5.0480, lng: 7.9520, address: "Set your work address" } },
+              { label: "Home", icon: <Home size={15} style={{ color: "var(--primary)" }} />, loc: favoriteHome, fallback: { name: "Home", lat: 5.0253, lng: 7.9306, address: "Set your home address" } },
+              { label: "Work", icon: <Briefcase size={15} style={{ color: "var(--cyan)" }} />, loc: favoriteWork, fallback: { name: "Work", lat: 5.0480, lng: 7.9520, address: "Set your work address" } },
             ].map(item => (
               <button
                 key={item.label}
@@ -327,7 +327,7 @@ export default function HomeScreen({
                   width: 36, height: 36, borderRadius: "50%",
                   background: "var(--bg-elevated)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "1.1rem", boxShadow: "inset 0 1px 3px rgba(255,255,255,0.05)"
+                  boxShadow: "inset 0 1px 3px rgba(255,255,255,0.05)"
                 }}>
                   {item.icon}
                 </div>

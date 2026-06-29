@@ -23,6 +23,7 @@ import CarpoolMatchModal from "./components/carpool-match-modal";
 import ReferralScreen from "./components/referral-screen";
 import OnboardingTour from "./components/onboarding-tour";
 import AdminDashboard from "./components/admin-dashboard";
+import DriverEnrollmentModal from "./components/driver-enrollment-modal";
 
 // Import Leaflet Map dynamically (SSR disabled)
 const GlideMap = dynamic(() => import("./components/map"), {
@@ -85,6 +86,24 @@ export default function Home() {
   const [surgeMultiplier] = useState<number>(generateSurge);
   const [referralBalance] = useState(2000);
 
+  const [driverStatus, setDriverStatus] = useState<"not_enrolled" | "pending" | "approved">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("glide_driver_status") as any) || "not_enrolled";
+    }
+    return "not_enrolled";
+  });
+
+  const [driverApplications, setDriverApplications] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("glide_driver_applications");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+
+
   // ── View State Machine ──
   const [currentView, setCurrentView] = useState<AppView>("home");
 
@@ -131,39 +150,68 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) return;
 
+    const fallbackToNominatim = async (lat: number, lon: number) => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+        );
+        const data = await response.json();
+        const addressText = data.display_name || "Current Location";
+        const name = data.address?.neighbourhood || 
+                     data.address?.suburb || 
+                     data.address?.road || 
+                     data.address?.city || 
+                     "My Location";
+
+        setDeviceLocation({
+          name,
+          lat,
+          lng: lon,
+          address: addressText,
+        });
+      } catch (error) {
+        setDeviceLocation({
+          name: "My Location",
+          lat,
+          lng: lon,
+          address: `Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(4)}`,
+        });
+      }
+    };
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-          );
-          const data = await response.json();
-          const addressText = data.display_name || "Current Location";
-          
-          const name = data.address?.neighbourhood || 
-                       data.address?.suburb || 
-                       data.address?.road || 
-                       data.address?.city || 
-                       "My Location";
-
-          setDeviceLocation({
-            name,
-            lat: latitude,
-            lng: longitude,
-            address: addressText,
+        const google = (window as any).google;
+        if (google && google.maps && google.maps.Geocoder) {
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results: any, status: any) => {
+            if (status === "OK" && results && results[0]) {
+              const res = results[0];
+              const name = res.address_components.find((c: any) => c.types.includes("sublocality") || c.types.includes("neighborhood") || c.types.includes("route"))?.long_name || "My Location";
+              setDeviceLocation({
+                name,
+                lat: latitude,
+                lng: longitude,
+                address: res.formatted_address,
+              });
+            } else {
+              fallbackToNominatim(latitude, longitude);
+            }
           });
-        } catch (error) {
-          setDeviceLocation({
-            name: "My Location",
-            lat: latitude,
-            lng: longitude,
-            address: `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`,
-          });
+        } else {
+          fallbackToNominatim(latitude, longitude);
         }
       },
       (error) => {
         console.warn("Geolocation warning:", error.message);
+        // Fallback to center of Uyo if blocked/failed
+        setDeviceLocation({
+          name: "Uyo Plaza",
+          lat: 5.0325,
+          lng: 7.9255,
+          address: "Ibom Plaza, Uyo, Akwa Ibom State, Nigeria",
+        });
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -333,6 +381,59 @@ export default function Home() {
     handleStartBooking(p, d);
   };
 
+  const handleEnterDriverModeRequest = () => {
+    if (driverStatus === "approved") {
+      setIsDriverMode(true);
+    } else if (driverStatus === "pending") {
+      alert("⚠️ Your driver application is currently pending verification. You can approve it instantly by unlocking the Admin Operator Dashboard in settings (tap the App Version 5 times).");
+    } else {
+      setShowEnrollmentModal(true);
+    }
+  };
+
+  const handleDriverEnrollSubmit = (details: {
+    vehicleModel: string;
+    plateNumber: string;
+    licenseNumber: string;
+    bankName: string;
+    accountNumber: string;
+  }) => {
+    const newApp = {
+      ...details,
+      fullName: userProfile.fullName,
+      appliedAt: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+    };
+    const updatedApps = [...driverApplications, newApp];
+    setDriverApplications(updatedApps);
+    setDriverStatus("pending");
+    setShowEnrollmentModal(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("glide_driver_status", "pending");
+      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
+    }
+  };
+
+  const handleApproveDriver = (fullName: string) => {
+    setDriverStatus("approved");
+    const updatedApps = driverApplications.filter(app => app.fullName !== fullName);
+    setDriverApplications(updatedApps);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("glide_driver_status", "approved");
+      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
+    }
+  };
+
+  const handleRejectDriver = (fullName: string) => {
+    setDriverStatus("not_enrolled");
+    const updatedApps = driverApplications.filter(app => app.fullName !== fullName);
+    setDriverApplications(updatedApps);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("glide_driver_status", "not_enrolled");
+      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
+    }
+  };
+
+
   // ─── RENDER ───
 
   if (showSplash) return <SplashScreen onComplete={() => setShowSplash(false)} />;
@@ -345,7 +446,14 @@ export default function Home() {
 
   // ── Admin Dashboard ──
   if (showAdmin) {
-    return <AdminDashboard onClose={() => setShowAdmin(false)} />;
+    return (
+      <AdminDashboard
+        onClose={() => setShowAdmin(false)}
+        driverApplications={driverApplications}
+        onApproveDriver={handleApproveDriver}
+        onRejectDriver={handleRejectDriver}
+      />
+    );
   }
 
   const showMap = currentView === "home" || currentView === "booking" || currentView === "ride";
@@ -457,7 +565,7 @@ export default function Home() {
             key="settings"
             settings={settings}
             onSettingsChange={setSettings}
-            onEnterDriverMode={() => setIsDriverMode(true)}
+            onEnterDriverMode={handleEnterDriverModeRequest}
             onOpenAdmin={() => setShowAdmin(true)}
           />
         )}
@@ -538,6 +646,13 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* ── Driver Enrollment Modal ── */}
+      <DriverEnrollmentModal
+        isOpen={showEnrollmentModal}
+        onClose={() => setShowEnrollmentModal(false)}
+        onSubmit={handleDriverEnrollSubmit}
+      />
     </div>
   );
 }

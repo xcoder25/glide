@@ -31,6 +31,27 @@ function getDistance(a: LocationData, b: LocationData): number {
   return parseFloat((R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa))).toFixed(1));
 }
 
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+function resolveCustomLocation(q: string): LocationData {
+  const hash = hashCode(q);
+  // deterministic offset in range [-0.015, 0.015] to keep it in Uyo area
+  const latOffset = ((hash % 300) - 150) / 10000;
+  const lngOffset = (((hash >> 3) % 300) - 150) / 10000;
+  return {
+    name: q,
+    lat: 5.0301 + latOffset,
+    lng: 7.9273 + lngOffset,
+    address: `${q}, Uyo, Akwa Ibom State, Nigeria`,
+  };
+}
+
 function LocationPicker({
   label, value, onSelect, placeholder, accentColor,
 }: {
@@ -48,12 +69,52 @@ function LocationPicker({
   const handleSearch = (q: string) => {
     setQuery(q);
     if (q.length < 1) { setResults([]); return; }
-    setResults(
-      PRESET_LOCATIONS.filter(l =>
+
+    const google = (window as any).google;
+    if (google && google.maps && google.maps.Geocoder) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode(
+        {
+          address: q,
+          componentRestrictions: { country: "NG", administrativeArea: "Akwa Ibom" },
+        },
+        (resultsList: any, status: any) => {
+          if (status === "OK" && resultsList) {
+            const formatted = resultsList.map((item: any) => ({
+              name: item.formatted_address.split(",")[0],
+              lat: item.geometry.location.lat(),
+              lng: item.geometry.location.lng(),
+              address: item.formatted_address,
+            }));
+            
+            // Filter duplicates if any match the custom entry
+            const filteredResults = [
+              resolveCustomLocation(q),
+              ...formatted.filter((item: LocationData) => item.name.toLowerCase() !== q.toLowerCase())
+            ];
+            setResults(filteredResults);
+          } else {
+            const filtered = PRESET_LOCATIONS.filter(l =>
+              l.name.toLowerCase().includes(q.toLowerCase()) ||
+              l.address.toLowerCase().includes(q.toLowerCase())
+            ).slice(0, 5);
+            setResults([
+              resolveCustomLocation(q),
+              ...filtered
+            ]);
+          }
+        }
+      );
+    } else {
+      const filtered = PRESET_LOCATIONS.filter(l =>
         l.name.toLowerCase().includes(q.toLowerCase()) ||
         l.address.toLowerCase().includes(q.toLowerCase())
-      ).slice(0, 5)
-    );
+      ).slice(0, 5);
+      setResults([
+        resolveCustomLocation(q),
+        ...filtered
+      ]);
+    }
   };
 
   return (
@@ -103,10 +164,13 @@ function LocationPicker({
             boxShadow: "var(--shadow-xl)",
             zIndex: 50,
             overflow: "hidden",
+            maxHeight: "220px",
+            overflowY: "auto",
           }}>
             {results.map((loc, i) => (
               <button
-                key={loc.name}
+                key={i}
+                type="button"
                 onMouseDown={() => { onSelect(loc); setQuery(loc.name); setResults([]); }}
                 style={{
                   display: "flex",
@@ -128,9 +192,11 @@ function LocationPicker({
                 <div style={{ width: 30, height: 30, borderRadius: "8px", background: `${accentColor}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <MapPin size={13} style={{ color: accentColor }} />
                 </div>
-                <div>
-                  <p style={{ fontSize: "0.86rem", fontWeight: 700, color: "var(--text-1)" }}>{loc.name}</p>
-                  <p style={{ fontSize: "0.7rem", color: "var(--text-3)", fontWeight: 500 }}>{loc.address}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: "0.86rem", fontWeight: 700, color: "var(--text-1)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    {i === 0 && query !== loc.name ? `📍 Use: "${loc.name}"` : loc.name}
+                  </p>
+                  <p style={{ fontSize: "0.7rem", color: "var(--text-3)", fontWeight: 500, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{loc.address}</p>
                 </div>
               </button>
             ))}

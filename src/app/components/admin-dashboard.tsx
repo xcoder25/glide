@@ -37,10 +37,13 @@ const STATUS_STYLE: Record<string, { color: string; bg: string; label: string }>
 
 interface AdminDashboardProps {
   onClose: () => void;
+  driverApplications?: any[];
+  onApproveDriver?: (appId: string) => void;
+  onRejectDriver?: (appId: string) => void;
 }
 
-export default function AdminDashboard({ onClose }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "rides" | "drivers">("overview");
+export default function AdminDashboard({ onClose, driverApplications = [], onApproveDriver, onRejectDriver }: AdminDashboardProps) {
+  const [activeTab, setActiveTab] = useState<"overview" | "rides" | "drivers" | "applications">("overview");
 
   const todayRides = 142;
   const todayRevenue = 68400;
@@ -51,7 +54,9 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
     { id: "overview" as const, label: "Overview" },
     { id: "rides" as const, label: "Live Rides" },
     { id: "drivers" as const, label: "Drivers" },
+    { id: "applications" as const, label: `Applications (${driverApplications.length})` },
   ];
+
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "var(--bg-base)", display: "flex", flexDirection: "column", animation: "slide-up 0.35s var(--ease-spring) both" }}>
@@ -249,6 +254,93 @@ export default function AdminDashboard({ onClose }: AdminDashboardProps) {
                 </div>
               </div>
             ))}
+          </>
+        )}
+
+        {/* ── APPLICATIONS TAB ── */}
+        {activeTab === "applications" && (
+          <>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-3)", fontWeight: 500 }}>
+              {driverApplications.length} pending driver applications under review
+            </div>
+            {driverApplications.length === 0 ? (
+              <div style={{
+                padding: "40px 20px",
+                textAlign: "center",
+                background: "var(--bg-elevated)",
+                borderRadius: "var(--r-xl)",
+                border: "1px dashed var(--border)",
+              }}>
+                <CheckCircle size={32} style={{ color: "var(--green)", marginBottom: "12px", opacity: 0.8 }} />
+                <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "var(--text-1)" }}>All caught up!</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-3)", marginTop: "4px" }}>No driver applications are currently pending approval.</div>
+              </div>
+            ) : (
+              driverApplications.map((app, i) => (
+                <div key={app.id || i} style={{
+                  padding: "18px",
+                  background: "var(--bg-elevated)",
+                  borderRadius: "var(--r-xl)",
+                  border: "1px solid var(--border)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  animation: "slide-up 0.3s var(--ease) both",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div>
+                      <div style={{ fontSize: "0.92rem", fontWeight: 900, color: "var(--text-1)" }}>{app.fullName}</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-3)", marginTop: "2px" }}>Applied {app.appliedAt}</div>
+                    </div>
+                    <span style={{ fontSize: "0.62rem", fontWeight: 800, background: "var(--primary-dim)", color: "var(--primary)", padding: "2px 8px", borderRadius: "99px", textTransform: "uppercase" }}>Pending Approval</span>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", background: "var(--bg-surface)", padding: "12px", borderRadius: "var(--r-lg)", border: "1px solid var(--border-med)" }}>
+                    <div>
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-4)", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Vehicle Model</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-1)" }}>{app.vehicleModel}</span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-4)", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Plate Number</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-1)" }}>{app.plateNumber}</span>
+                    </div>
+                    <div style={{ marginTop: "6px" }}>
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-4)", fontWeight: 700, textTransform: "uppercase", display: "block" }}>License Number</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-1)" }}>{app.licenseNumber}</span>
+                    </div>
+                    <div style={{ marginTop: "6px" }}>
+                      <span style={{ fontSize: "0.62rem", color: "var(--text-4)", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Bank Payout</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-1)" }}>{app.bankName} ({app.accountNumber})</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+                    <button
+                      onClick={() => onRejectDriver?.(app.id || app.fullName)}
+                      style={{
+                        flex: 1, padding: "10px", borderRadius: "var(--r-lg)",
+                        background: "var(--red-dim)", border: "1.5px solid rgba(255,75,75,0.25)",
+                        color: "var(--red)", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                      }}
+                    >
+                      <XCircle size={14} /> Reject
+                    </button>
+                    <button
+                      onClick={() => onApproveDriver?.(app.id || app.fullName)}
+                      style={{
+                        flex: 2, padding: "10px", borderRadius: "var(--r-lg)",
+                        background: "var(--green-dim)", border: "1.5px solid rgba(0,217,126,0.3)",
+                        color: "var(--green)", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                      }}
+                    >
+                      <CheckCircle size={14} /> Approve Driver
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </>
         )}
       </div>
