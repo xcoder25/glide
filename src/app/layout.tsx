@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="en" className={`${plusJakarta.variable} h-full antialiased`}>
       <body style={{ margin: 0, padding: 0, minHeight: "100vh" }}>
         {children}
       </body>

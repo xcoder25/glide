@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Zap } from "lucide-react";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -15,12 +14,12 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) { clearInterval(interval); return 100; }
-        return prev + 5;
+        return prev + 4;
       });
-    }, 100);
+    }, 80);
 
-    const exitTimer     = setTimeout(() => setExiting(true), 2200);
-    const completeTimer = setTimeout(() => onComplete(),     2700);
+    const exitTimer     = setTimeout(() => setExiting(true), 2400);
+    const completeTimer = setTimeout(() => onComplete(), 2900);
 
     return () => {
       clearInterval(interval);
@@ -38,51 +37,62 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "#ffffff",
+        background: "linear-gradient(160deg, #080e1a 0%, #0d1628 50%, #1a0d00 100%)",
         zIndex: 9999,
         opacity: exiting ? 0 : 1,
         transition: exiting ? "opacity 0.5s ease" : "none",
+        overflow: "hidden",
       }}
     >
-      {/* Soft bg glow */}
+      {/* Ambient glow orbs */}
       <div style={{
         position: "absolute",
-        width: 360,
-        height: 360,
+        width: 500, height: 500,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(217,95,0,0.07) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)",
+        top: "50%", left: "50%",
+        transform: "translate(-50%, -60%)",
+        pointerEvents: "none",
+        animation: "glow-pulse 3s ease-in-out infinite",
+      }} />
+      <div style={{
+        position: "absolute",
+        width: 300, height: 300,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)",
+        bottom: "10%", right: "10%",
         pointerEvents: "none",
       }} />
 
-      {/* Logo box */}
+      {/* Logo Mark */}
       <div
         style={{
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          background: "linear-gradient(135deg, #D95F00 0%, #1A6B3C 100%)",
+          width: 84,
+          height: 84,
+          borderRadius: 24,
+          background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 12px 35px rgba(217,95,0,0.28)",
-          marginBottom: 22,
-          /* keyframe defined in globals.css */
+          boxShadow: "0 20px 60px rgba(249,115,22,0.4), 0 0 0 1px rgba(249,115,22,0.3)",
+          marginBottom: 28,
           animation: "splash-pop-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0s both",
         }}
       >
-        <Zap size={34} color="white" />
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
       </div>
 
       {/* Brand name */}
       <h1
         style={{
-          fontSize: "2.8rem",
+          fontSize: "3.2rem",
           fontWeight: 900,
-          letterSpacing: "-1px",
-          background: "linear-gradient(135deg, #1a0a00 0%, #D95F00 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          letterSpacing: "-2px",
+          color: "#ffffff",
           margin: 0,
+          fontFamily: "var(--font)",
           animation: "splash-fade-up 0.6s ease 0.25s both",
         }}
       >
@@ -92,13 +102,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {/* Tagline */}
       <p
         style={{
-          fontSize: "0.72rem",
+          fontSize: "0.68rem",
           fontWeight: 700,
-          letterSpacing: "0.22em",
+          letterSpacing: "0.28em",
           textTransform: "uppercase",
-          color: "#94a3b8",
-          marginTop: 8,
-          marginBottom: 44,
+          color: "rgba(255,255,255,0.35)",
+          marginTop: 10,
+          marginBottom: 52,
+          fontFamily: "var(--font)",
           animation: "splash-fade-up 0.6s ease 0.4s both",
         }}
       >
@@ -108,9 +119,9 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {/* Progress bar */}
       <div
         style={{
-          width: 140,
+          width: 160,
           height: 3,
-          background: "rgba(0,0,0,0.06)",
+          background: "rgba(255,255,255,0.08)",
           borderRadius: 99,
           overflow: "hidden",
           animation: "splash-fade-in 0.5s ease 0.55s both",
@@ -121,12 +132,26 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             width: `${progress}%`,
             height: "100%",
             borderRadius: 99,
-            background: "linear-gradient(90deg, #D95F00, #1A6B3C)",
-            boxShadow: "0 0 8px rgba(217,95,0,0.5)",
-            transition: "width 0.12s linear",
+            background: "linear-gradient(90deg, #F97316, #FB923C)",
+            boxShadow: "0 0 12px rgba(249,115,22,0.6)",
+            transition: "width 0.1s linear",
           }}
         />
       </div>
+
+      {/* Version */}
+      <p style={{
+        position: "absolute",
+        bottom: 32,
+        fontSize: "0.65rem",
+        color: "rgba(255,255,255,0.2)",
+        fontFamily: "var(--font)",
+        fontWeight: 500,
+        letterSpacing: "0.05em",
+        animation: "splash-fade-in 0.5s ease 0.8s both",
+      }}>
+        v2.4.1 · Uyo, Akwa Ibom
+      </p>
     </div>
   );
 }

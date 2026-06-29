@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Home, Clock, CreditCard, User, Settings, Zap, LogOut } from "lucide-react";
+import { Home, Clock, CreditCard, User, Settings, LogOut } from "lucide-react";
 import type { AppView } from "./bottom-nav";
 
 interface TopNavProps {
@@ -23,38 +23,49 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
   return (
     <aside
       style={{
-        width: "72px",
+        width: "76px",
         height: "100%",
-        background: "rgba(255,255,255,0.75)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        background: "var(--bg-secondary)",
         borderRight: "1px solid var(--card-border)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "20px 0",
-        gap: "6px",
+        padding: "20px 0 24px 0",
+        gap: "4px",
         zIndex: 200,
         flexShrink: 0,
+        boxShadow: "2px 0 12px rgba(0,0,0,0.04)",
       }}
     >
       {/* Logo */}
       <div
         onClick={() => onNavigate("home")}
+        title="Glide Home"
         style={{
-          width: 42,
-          height: 42,
-          borderRadius: "13px",
-          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+          width: 44,
+          height: 44,
+          borderRadius: "14px",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: "16px",
+          marginBottom: "20px",
           cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(217,95,0,0.25)",
+          boxShadow: "var(--shadow-primary)",
+          transition: "transform 0.2s var(--ease), box-shadow 0.2s",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.06)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 30px rgba(249,115,22,0.45)";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-primary)";
         }}
       >
-        <Zap size={22} color="#fff" strokeWidth={2.5} />
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
       </div>
 
       {/* Nav Items */}
@@ -74,12 +85,24 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              transition: "all 0.2s ease",
-              background: isActive ? "rgba(217,95,0,0.12)" : "transparent",
-              color: isActive ? "var(--primary)" : "var(--text-muted)",
-              boxShadow: isActive ? "0 2px 8px rgba(217,95,0,0.15)" : "none",
+              transition: "all 0.2s var(--ease)",
+              background: isActive ? "var(--primary-subtle)" : "transparent",
+              color: isActive ? "var(--primary)" : "var(--text-faint)",
+              position: "relative",
             }}
           >
+            {isActive && (
+              <div style={{
+                position: "absolute",
+                left: -1,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 3,
+                height: 20,
+                borderRadius: "0 4px 4px 0",
+                background: "var(--primary)",
+              }} />
+            )}
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
           </button>
         );
@@ -91,21 +114,26 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
       {/* User Avatar */}
       <div
         onClick={() => onNavigate("profile")}
+        title={userName}
         style={{
-          width: 38,
-          height: 38,
+          width: 40,
+          height: 40,
           borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+          background: "linear-gradient(135deg, var(--primary) 0%, #F59E0B 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontWeight: 800,
-          fontSize: "0.85rem",
+          fontSize: "0.9rem",
           color: "#fff",
           cursor: "pointer",
-          marginBottom: "4px",
+          marginBottom: "8px",
+          boxShadow: "var(--shadow-primary)",
+          border: "2px solid var(--bg-secondary)",
+          transition: "transform 0.2s var(--ease)",
         }}
-        title={userName}
+        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "scale(1.08)"; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "scale(1)"; }}
       >
         {userName.charAt(0).toUpperCase()}
       </div>
@@ -115,20 +143,26 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
         onClick={onLogout}
         title="Sign Out"
         style={{
-          width: 38,
-          height: 38,
+          width: 40,
+          height: 40,
           border: "none",
           borderRadius: "12px",
           background: "transparent",
-          color: "var(--text-muted)",
+          color: "var(--text-faint)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          transition: "all 0.2s",
+          transition: "all 0.2s var(--ease)",
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = "#dc2626"; e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
-        onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = "var(--danger)";
+          e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = "var(--text-faint)";
+          e.currentTarget.style.background = "transparent";
+        }}
       >
         <LogOut size={17} />
       </button>

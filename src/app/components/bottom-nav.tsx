@@ -28,9 +28,14 @@ export default function BottomNav({ currentView, onNavigate }: BottomNavProps) {
             className={`bottom-nav-item${isActive ? " active" : ""}`}
             onClick={() => onNavigate(id)}
             aria-label={label}
+            style={{ gap: isActive ? "5px" : "4px" }}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-            <span>{label}</span>
+            <Icon
+              size={isActive ? 22 : 20}
+              strokeWidth={isActive ? 2.5 : 1.8}
+              style={{ transition: "all 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}
+            />
+            <span style={{ transition: "all 0.2s", fontWeight: isActive ? 800 : 600 }}>{label}</span>
           </button>
         );
       })}

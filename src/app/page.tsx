@@ -41,9 +41,9 @@ function getKmDistance(loc1: LocationData, loc2: LocationData) {
 }
 
 const SEED_HISTORY: RideRecord[] = [
-  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", fare: 3800, distance: 8, category: "Glide Ride", driverName: "Marcus Sterling", rating: 5, status: "completed" },
-  { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", fare: 2500, distance: 12, category: "Glide Premium", driverName: "Chidi Obi", rating: 4, status: "completed" },
-  { id: "r3", date: "June 24, 7:30 PM", pickup: "Uyo Central Market", dropoff: "Godswill Akpabio Stadium", fare: 0, distance: 4, category: "Glide Lite", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
+  { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", pickupData: { name: "Ibom Plaza", lat: 5.0253, lng: 7.9306, address: "Udo Udoma Ave, Uyo" }, dropoffData: { name: "Akwa Ibom Airport", lat: 4.8725, lng: 8.0925, address: "Airport Rd, Uyo" }, fare: 3800, distance: 8, category: "Glide Ride", driverName: "Marcus Sterling", rating: 5, status: "completed" },
+  { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", pickupData: { name: "Ibom Icon Hotel", lat: 5.0378, lng: 7.9142, address: "Nwaniba Rd, Uyo" }, dropoffData: { name: "University of Uyo (UNIUYO)", lat: 5.0153, lng: 7.9336, address: "UNIUYO Campus, Uyo" }, fare: 2500, distance: 12, category: "Glide Premium", driverName: "Chidi Obi", rating: 4, status: "completed" },
+  { id: "r3", date: "June 24, 7:30 PM", pickup: "Uyo Central Market", dropoff: "Godswill Akpabio Stadium", pickupData: { name: "Uyo Central Market", lat: 5.0280, lng: 7.9220, address: "Abak Rd, Uyo" }, dropoffData: { name: "Godswill Akpabio Stadium", lat: 5.0480, lng: 7.9520, address: "Stadium Rd, Uyo" }, fare: 0, distance: 4, category: "Glide Lite", driverName: "Emeka Nwosu", status: "cancelled", cancelReason: "Driver took too long" },
 ];
 
 const SEED_TRANSACTIONS: WalletTransaction[] = [
@@ -146,6 +146,8 @@ export default function Home() {
     darkMode: false,
     notifications: true,
     language: "English",
+    sound: true,
+    saveData: false,
   });
 
   // ── Mobile Bottom Sheet Drag State ──
@@ -399,28 +401,30 @@ export default function Home() {
 
         {/* Header (shown on home, profile, history, payment, settings views) */}
         {(currentView === "home" || currentView === "profile" || currentView === "history" || currentView === "payment" || currentView === "settings") && (
-          <header style={{ padding: "clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <header style={{ padding: "clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: "var(--bg-secondary)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {/* Logo */}
-              <div style={{ width: 36, height: 36, borderRadius: "11px", background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(217,95,0,0.28)" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "11px", background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-primary)" }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
               </div>
               <div>
-                <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em", display: "block", lineHeight: 1 }}>Glide</span>
-                <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.05em" }}>UYO · AKWA IBOM</span>
+                <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-heading)", letterSpacing: "-0.02em", display: "block", lineHeight: 1 }}>Glide</span>
+                <span style={{ fontSize: "0.6rem", color: "var(--text-faint)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>UYO · AKWA IBOM</span>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               {/* Notifications badge */}
               <div style={{ position: "relative" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--background)", zIndex: 1 }} />
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--bg-secondary)", zIndex: 1 }} />
                 <button
-                  style={{ width: 36, height: 36, border: "1px solid var(--card-border)", borderRadius: "11px", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", transition: "all 0.2s" }}
+                  style={{ width: 36, height: 36, border: "1px solid var(--card-border)", borderRadius: "11px", background: "var(--card-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", transition: "all 0.2s" }}
                   onClick={() => setShowNotifications(true)}
                   title="Notifications"
+                  onMouseEnter={e => { e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.borderColor = "var(--primary)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--card-border)"; }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -430,8 +434,10 @@ export default function Home() {
               {/* Avatar */}
               <button
                 onClick={() => setCurrentView("profile")}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), var(--accent))", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 800, color: "#fff", fontFamily: "var(--font-sans)", boxShadow: "0 2px 8px rgba(217,95,0,0.25)" }}
+                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), #F59E0B)", border: "2px solid var(--bg-secondary)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 900, color: "#fff", fontFamily: "var(--font)", boxShadow: "var(--shadow-primary)", transition: "transform 0.2s var(--ease)" }}
                 title="Profile"
+                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
               >
                 {userProfile.fullName.charAt(0).toUpperCase()}
               </button>
@@ -446,8 +452,8 @@ export default function Home() {
             onClick={() => setCurrentView("ride")}
             style={{
               padding: "12px 18px",
-              background: "linear-gradient(135deg, rgba(217,95,0,0.08) 0%, rgba(26,107,60,0.08) 100%)",
-              borderBottom: "1.5px solid rgba(217,95,0,0.15)",
+              background: "linear-gradient(135deg, var(--primary-subtle) 0%, var(--sky-subtle) 100%)",
+              borderBottom: "1px solid var(--primary-glow)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -457,20 +463,7 @@ export default function Home() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: "var(--primary)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 4px 12px rgba(217,95,0,0.25)",
-                  flexShrink: 0,
-                }}
-              >
-                {/* SVG Car Icon */}
+              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-primary)", flexShrink: 0, animation: "finding-pulse 2s ease-in-out infinite" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
                   <circle cx="7" cy="17" r="2" />
@@ -478,32 +471,34 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>
+                <p style={{ fontSize: "0.84rem", fontWeight: 800, color: "var(--text-heading)", letterSpacing: "-0.01em" }}>
                   {rideStatus === "searching" && "Connecting with driver..."}
                   {rideStatus === "arriving" && "Driver is arriving shortly"}
                   {rideStatus === "arrived" && "Driver has arrived outside!"}
                   {rideStatus === "inprogress" && "On trip to destination"}
                   {rideStatus === "completed" && "Trip completed"}
                 </p>
-                <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "1px" }}>
-                  {selectedCategory?.name || "Glide Comfort"} • Marcus Sterling (GLIDE-001)
+                <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px", fontWeight: 600 }}>
+                  {selectedCategory?.name || "Glide Comfort"} · Marcus Sterling
                 </p>
               </div>
             </div>
             <button
               style={{
-                padding: "6px 12px",
+                padding: "7px 14px",
                 background: "var(--primary)",
                 color: "#fff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: "var(--r-sm)",
                 fontSize: "0.72rem",
-                fontWeight: 700,
+                fontWeight: 800,
                 cursor: "pointer",
-                fontFamily: "var(--font-sans)",
+                fontFamily: "var(--font)",
+                whiteSpace: "nowrap",
+                boxShadow: "var(--shadow-primary)",
               }}
             >
-              Track Live
+              Track Live →
             </button>
           </div>
         )}
