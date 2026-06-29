@@ -131,7 +131,10 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         justifyContent: "space-between",
         padding: "40px 24px",
         position: "relative",
-        background: "var(--bg-deep)",
+        background: "linear-gradient(to bottom, rgba(4, 4, 9, 0.6) 0%, rgba(4, 4, 9, 0.85) 60%, rgba(4, 4, 9, 0.98) 100%), url('/ride.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}>
         {/* Orbs */}
         <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,107,26,0.1) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
@@ -148,7 +151,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             }}>
               <Zap size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
+            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "#ffffff", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
           </div>
           <span style={{
             padding: "5px 14px",
@@ -170,7 +173,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             fontSize: "2.6rem",
             fontWeight: 900,
             lineHeight: 1.05,
-            color: "var(--text-1)",
+            color: "#ffffff",
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.04em"
           }}>
@@ -179,7 +182,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           </h2>
           <p style={{
             fontSize: "0.95rem",
-            color: "var(--text-3)",
+            color: "rgba(255, 255, 255, 0.7)",
             marginTop: "16px",
             lineHeight: 1.5,
             fontWeight: 500,
@@ -189,15 +192,25 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           </p>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "32px" }}>
-            <div className="glass-card" style={{ padding: "14px" }}>
+            <div className="glass-card" style={{
+              padding: "14px",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(20px)",
+            }}>
               <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", marginBottom: "10px" }}>⚡</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-1)" }}>Instant Rides</p>
-              <p style={{ fontSize: "0.68rem", color: "var(--text-3)", marginTop: "2px" }}>Wait time under 4 min</p>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff" }}>Instant Rides</p>
+              <p style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.6)", marginTop: "2px" }}>Wait time under 4 min</p>
             </div>
-            <div className="glass-card" style={{ padding: "14px" }}>
+            <div className="glass-card" style={{
+              padding: "14px",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(20px)",
+            }}>
               <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--cyan-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--cyan)", marginBottom: "10px" }}>🛡️</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-1)" }}>Verified Safety</p>
-              <p style={{ fontSize: "0.68rem", color: "var(--text-3)", marginTop: "2px" }}>AI companion routes</p>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#ffffff" }}>Verified Safety</p>
+              <p style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.6)", marginTop: "2px" }}>AI companion routes</p>
             </div>
           </div>
         </div>
@@ -208,11 +221,17 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             <span>Create Account</span> <ArrowRight size={16} />
           </button>
           
-          <button onClick={() => go("login")} className="btn btn-secondary" style={{ padding: "16px", borderRadius: "var(--r-xl)" }}>
+          <button onClick={() => go("login")} className="btn" style={{
+            padding: "16px",
+            borderRadius: "var(--r-xl)",
+            background: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "#ffffff"
+          }}>
             I already have an account
           </button>
 
-          <p style={{ fontSize: "0.72rem", color: "var(--text-3)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
+          <p style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.5)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
             By getting started, you agree to our <br />
             <span style={{ color: "var(--primary)", fontWeight: 700 }}>Terms of Service</span> &amp; <span style={{ color: "var(--primary)", fontWeight: 700 }}>Privacy Policy</span>
           </p>
