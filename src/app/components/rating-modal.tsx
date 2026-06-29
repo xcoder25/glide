@@ -55,12 +55,12 @@ export default function RatingModal({
 
   const getRatingLabel = (r: number) => {
     switch (r) {
-      case 1: return { text: "Poor",        color: "var(--danger)"  };
-      case 2: return { text: "Fair",        color: "#F59E0B"        };
-      case 3: return { text: "Good",        color: "#F59E0B"        };
-      case 4: return { text: "Great",       color: "var(--success)" };
-      case 5: return { text: "Excellent! 🎉", color: "var(--success)" };
-      default: return { text: "Tap a star to rate", color: "var(--text-faint)" };
+      case 1: return { text: "Poor",        color: "var(--red)"  };
+      case 2: return { text: "Fair",        color: "var(--amber)"        };
+      case 3: return { text: "Good",        color: "var(--amber)"        };
+      case 4: return { text: "Great",       color: "var(--green)" };
+      case 5: return { text: "Excellent! 🎉", color: "var(--green)" };
+      default: return { text: "Tap a star to rate", color: "var(--text-3)" };
     }
   };
 
@@ -82,23 +82,23 @@ export default function RatingModal({
     return (
       <div className="modal-overlay">
         <div className="modal-sheet animate-modal-pop" style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "18px" }}>
-          <div style={{ width: 88, height: 88, borderRadius: "50%", background: "linear-gradient(135deg, var(--success) 0%, #059669 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 40px rgba(16,185,129,0.4)", animation: "splash-pop-in 0.6s var(--ease) both" }}>
-            <ThumbsUp size={40} color="#fff" />
+          <div style={{ width: 88, height: 88, borderRadius: "50%", background: "var(--green-dim)", border: "1px solid var(--green)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 40px rgba(0,217,126,0.3)", animation: "splash-pop-in 0.6s var(--ease) both" }}>
+            <ThumbsUp size={40} style={{ color: "var(--green)" }} />
           </div>
           <div>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-heading)", letterSpacing: "-0.02em" }}>Thank you!</h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.55, fontWeight: 500 }}>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>Thank you!</h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginTop: "8px", lineHeight: 1.5, fontWeight: 500 }}>
               Your feedback helps improve Glide for everyone in Uyo.
             </p>
           </div>
           {selectedTip > 0 && (
-            <div style={{ padding: "12px 24px", background: "var(--success-subtle)", border: "1px solid var(--success-glow)", borderRadius: "var(--r-md)", fontSize: "0.85rem", fontWeight: 700, color: "var(--success)" }}>
+            <div style={{ padding: "10px 20px", background: "var(--green-dim)", border: "1px solid var(--green)", borderRadius: "var(--r-md)", fontSize: "0.82rem", fontWeight: 700, color: "var(--green)" }}>
               ₦{selectedTip.toLocaleString()} tip sent to {driverName.split(" ")[0]} 🙏
             </div>
           )}
           <div style={{ display: "flex", gap: "4px" }}>
             {[1,2,3,4,5].map(i => (
-              <Star key={i} size={24} fill={i <= rating ? "#F59E0B" : "transparent"} stroke={i <= rating ? "#F59E0B" : "var(--text-faint)"} />
+              <Star key={i} size={24} fill={i <= rating ? "var(--amber)" : "transparent"} stroke={i <= rating ? "var(--amber)" : "var(--text-4)"} />
             ))}
           </div>
         </div>
@@ -113,40 +113,35 @@ export default function RatingModal({
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <span style={{ fontSize: "0.6rem", fontWeight: 800, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.1em", background: "var(--primary-subtle)", padding: "3px 10px", borderRadius: "99px", border: "1px solid var(--primary-glow)" }}>
+            <span style={{ fontSize: "0.62rem", fontWeight: 800, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.08em", background: "var(--primary-dim)", padding: "3px 10px", borderRadius: "99px", border: "1px solid var(--primary-glow)" }}>
               Trip Complete ✓
             </span>
-            <h3 style={{ fontSize: "1.3rem", fontWeight: 900, color: "var(--text-heading)", letterSpacing: "-0.02em", marginTop: "8px" }}>Rate your ride</h3>
-            <p style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginTop: "3px", fontWeight: 500 }}>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em", marginTop: "8px" }}>Rate your ride</h3>
+            <p style={{ fontSize: "0.74rem", color: "var(--text-3)", marginTop: "3px", fontWeight: 500 }}>
               {pickupName} → {dropoffName}
             </p>
           </div>
-          <button
-            onClick={onSkip}
-            style={{ border: "1px solid var(--card-border)", background: "var(--card-bg)", borderRadius: "10px", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-faint)", flexShrink: 0, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.color = "var(--danger)"; e.currentTarget.style.borderColor = "var(--danger)"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.borderColor = "var(--card-border)"; }}
-          >
+          <button onClick={onSkip} className="back-btn" style={{ width: 34, height: 34 }}>
             <X size={15} />
           </button>
         </div>
 
         {/* Driver Card */}
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", background: "var(--card-bg)", borderRadius: "var(--r-lg)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-sm)" }}>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary) 0%, #F59E0B 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1.2rem", color: "#fff", flexShrink: 0, boxShadow: "var(--shadow-primary)" }}>
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px" }}>
+          <div style={{ width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1.1rem", color: "#fff", flexShrink: 0 }}>
             {driverName.charAt(0)}
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-heading)", letterSpacing: "-0.01em" }}>{driverName}</p>
-            <p style={{ fontSize: "0.73rem", color: "var(--text-muted)", marginTop: "2px", fontWeight: 500 }}>{categoryName}</p>
+            <p style={{ fontSize: "0.95rem", fontWeight: 800, color: "var(--text-1)" }}>{driverName}</p>
+            <p style={{ fontSize: "0.72rem", color: "var(--text-3)", marginTop: "2px", fontWeight: 500 }}>{categoryName}</p>
             <div style={{ display: "flex", gap: "2px", marginTop: "4px" }}>
-              {[1,2,3,4,5].map(i => <Star key={i} size={11} fill="#F59E0B" stroke="#F59E0B" />)}
-              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginLeft: "4px", fontWeight: 600 }}>4.9 overall</span>
+              {[1,2,3,4,5].map(i => <Star key={i} size={11} fill="var(--amber)" stroke="var(--amber)" />)}
+              <span style={{ fontSize: "0.65rem", color: "var(--text-3)", marginLeft: "4px", fontWeight: 600 }}>4.9 overall</span>
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: "1.3rem", fontWeight: 900, color: "var(--primary)", letterSpacing: "-0.03em" }}>₦{fare.toLocaleString()}</p>
-            <p style={{ fontSize: "0.6rem", color: "var(--text-faint)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: "2px" }}>Total Paid</p>
+            <p style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--primary)", letterSpacing: "-0.02em" }}>₦{fare.toLocaleString()}</p>
+            <p style={{ fontSize: "0.6rem", color: "var(--text-3)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: "2px" }}>Total Paid</p>
           </div>
         </div>
 
@@ -164,29 +159,29 @@ export default function RatingModal({
               >
                 <Star
                   size={36}
-                  fill={(hoveredStar || rating) >= star ? "#F59E0B" : "transparent"}
-                  stroke={(hoveredStar || rating) >= star ? "#F59E0B" : "var(--card-border-strong)"}
+                  fill={(hoveredStar || rating) >= star ? "var(--amber)" : "transparent"}
+                  stroke={(hoveredStar || rating) >= star ? "var(--amber)" : "var(--border-strong)"}
                   strokeWidth={1.5}
                 />
               </button>
             ))}
           </div>
-          <p style={{ fontSize: "0.9rem", fontWeight: 800, color: ratingInfo.color, transition: "color 0.2s", letterSpacing: "-0.01em" }}>
+          <p style={{ fontSize: "0.9rem", fontWeight: 800, color: ratingInfo.color, transition: "color 0.2s" }}>
             {ratingInfo.text}
           </p>
         </div>
 
-        {/* Category Ratings — show when overall is rated */}
+        {/* Category Ratings */}
         {rating > 0 && (
-          <div className="animate-slide-up">
-            <p className="section-header" style={{ marginBottom: "10px" }}>Detailed Breakdown</p>
+          <div className="animate-slide-up" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <p className="section-header">Detailed Breakdown</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {CATEGORY_RATINGS.map(cat => {
                 const val = categoryRatings[cat.key];
                 return (
                   <div key={cat.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <span style={{ fontSize: "1rem", width: 22 }}>{cat.icon}</span>
-                    <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-body)", width: 90, flexShrink: 0 }}>{cat.label}</span>
+                    <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-2)", width: 90, flexShrink: 0 }}>{cat.label}</span>
                     <div style={{ display: "flex", gap: "2px" }}>
                       {[1,2,3,4,5].map(star => (
                         <button
@@ -201,9 +196,9 @@ export default function RatingModal({
                           }}
                         >
                           <Star
-                            size={20}
-                            fill={(hoveredCategory?.key === cat.key ? hoveredCategory.star : val) >= star ? "#F59E0B" : "transparent"}
-                            stroke={(hoveredCategory?.key === cat.key ? hoveredCategory.star : val) >= star ? "#F59E0B" : "var(--card-border-strong)"}
+                            size={18}
+                            fill={(hoveredCategory?.key === cat.key ? hoveredCategory.star : val) >= star ? "var(--amber)" : "transparent"}
+                            stroke={(hoveredCategory?.key === cat.key ? hoveredCategory.star : val) >= star ? "var(--amber)" : "var(--border-strong)"}
                             strokeWidth={1.5}
                           />
                         </button>
@@ -217,7 +212,7 @@ export default function RatingModal({
           </div>
         )}
 
-        {/* Quick Tags — only on 4+ stars */}
+        {/* Quick Tags */}
         {rating >= 4 && (
           <div className="animate-slide-up">
             <p className="section-header" style={{ marginBottom: "8px" }}>What was great?</p>
@@ -229,9 +224,9 @@ export default function RatingModal({
                   style={{
                     padding: "7px 14px",
                     borderRadius: "99px",
-                    border: `1.5px solid ${selectedTags.includes(tag) ? "var(--success)" : "var(--card-border-strong)"}`,
-                    background: selectedTags.includes(tag) ? "var(--success-subtle)" : "transparent",
-                    color: selectedTags.includes(tag) ? "var(--success)" : "var(--text-muted)",
+                    border: `1.5px solid ${selectedTags.includes(tag) ? "var(--green)" : "var(--border-strong)"}`,
+                    background: selectedTags.includes(tag) ? "var(--green-dim)" : "transparent",
+                    color: selectedTags.includes(tag) ? "var(--green)" : "var(--text-2)",
                     fontSize: "0.73rem",
                     fontWeight: 700,
                     cursor: "pointer",
@@ -255,20 +250,19 @@ export default function RatingModal({
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1.5px solid var(--card-border-strong)",
+            border: "1.5px solid var(--border)",
             borderRadius: "var(--r-md)",
             fontSize: "0.86rem",
             fontFamily: "var(--font)",
-            color: "var(--text-heading)",
-            background: "var(--card-bg)",
+            color: "var(--text-1)",
+            background: "var(--bg-elevated)",
             outline: "none",
             resize: "none",
-            lineHeight: 1.55,
+            lineHeight: 1.5,
             fontWeight: 500,
-            transition: "border-color 0.2s",
           }}
           onFocus={e => { e.currentTarget.style.borderColor = "var(--primary)"; }}
-          onBlur={e => { e.currentTarget.style.borderColor = "var(--card-border-strong)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "var(--border)"; }}
         />
 
         {/* Tip */}
@@ -282,9 +276,9 @@ export default function RatingModal({
                 style={{
                   padding: "11px 6px",
                   borderRadius: "var(--r-md)",
-                  border: `1.5px solid ${selectedTip === value ? "var(--primary)" : "var(--card-border-strong)"}`,
-                  background: selectedTip === value ? "var(--primary-subtle)" : "var(--card-bg)",
-                  color: selectedTip === value ? "var(--primary)" : "var(--text-muted)",
+                  border: `1.5px solid ${selectedTip === value ? "var(--primary)" : "var(--border)"}`,
+                  background: selectedTip === value ? "var(--primary-dim)" : "var(--bg-elevated)",
+                  color: selectedTip === value ? "var(--primary)" : "var(--text-2)",
                   fontSize: "0.76rem",
                   fontWeight: 800,
                   cursor: "pointer",
@@ -308,9 +302,9 @@ export default function RatingModal({
             onClick={handleSubmit}
             disabled={rating === 0}
             className="btn btn-primary"
-            style={{ flex: 1, padding: "13px", fontSize: "0.92rem", opacity: rating === 0 ? 0.4 : 1, transition: "opacity 0.2s, transform 0.2s" }}
+            style={{ flex: 1, padding: "13px", fontSize: "0.92rem", opacity: rating === 0 ? 0.4 : 1 }}
           >
-            Submit {selectedTip > 0 ? `+ ₦${selectedTip} Tip` : "Rating"}
+            Submit {selectedTip > 0 ? `+ ₦${selectedTip}` : ""}
           </button>
         </div>
       </div>

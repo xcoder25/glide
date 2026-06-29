@@ -37,7 +37,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(160deg, #080e1a 0%, #0d1628 50%, #1a0d00 100%)",
+        background: "var(--bg-deep)",
         zIndex: 9999,
         opacity: exiting ? 0 : 1,
         transition: exiting ? "opacity 0.5s ease" : "none",
@@ -49,17 +49,16 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         position: "absolute",
         width: 500, height: 500,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(255,107,26,0.12) 0%, transparent 70%)",
         top: "50%", left: "50%",
         transform: "translate(-50%, -60%)",
         pointerEvents: "none",
-        animation: "glow-pulse 3s ease-in-out infinite",
       }} />
       <div style={{
         position: "absolute",
         width: 300, height: 300,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(0,194,255,0.08) 0%, transparent 70%)",
         bottom: "10%", right: "10%",
         pointerEvents: "none",
       }} />
@@ -67,19 +66,19 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {/* Logo Mark */}
       <div
         style={{
-          width: 84,
-          height: 84,
+          width: 80,
+          height: 80,
           borderRadius: 24,
-          background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 20px 60px rgba(249,115,22,0.4), 0 0 0 1px rgba(249,115,22,0.3)",
-          marginBottom: 28,
-          animation: "splash-pop-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0s both",
+          boxShadow: "var(--shadow-primary)",
+          marginBottom: 24,
+          animation: "splash-pop-in 0.7s var(--ease) both",
         }}
       >
-        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       </div>
@@ -88,12 +87,11 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       <h1
         style={{
           fontSize: "3.2rem",
-          fontWeight: 900,
+          fontWeight: 950,
           letterSpacing: "-2px",
-          color: "#ffffff",
+          color: "var(--text-1)",
           margin: 0,
-          fontFamily: "var(--font)",
-          animation: "splash-fade-up 0.6s ease 0.25s both",
+          fontFamily: "var(--font-display)",
         }}
       >
         GLIDE
@@ -106,11 +104,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           fontWeight: 700,
           letterSpacing: "0.28em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.35)",
+          color: "var(--text-3)",
           marginTop: 10,
-          marginBottom: 52,
+          marginBottom: 48,
           fontFamily: "var(--font)",
-          animation: "splash-fade-up 0.6s ease 0.4s both",
         }}
       >
         Smart Mobility · Uyo
@@ -121,10 +118,9 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         style={{
           width: 160,
           height: 3,
-          background: "rgba(255,255,255,0.08)",
+          background: "var(--border-strong)",
           borderRadius: 99,
           overflow: "hidden",
-          animation: "splash-fade-in 0.5s ease 0.55s both",
         }}
       >
         <div
@@ -132,8 +128,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             width: `${progress}%`,
             height: "100%",
             borderRadius: 99,
-            background: "linear-gradient(90deg, #F97316, #FB923C)",
-            boxShadow: "0 0 12px rgba(249,115,22,0.6)",
+            background: "linear-gradient(90deg, var(--primary), var(--amber))",
+            boxShadow: "0 0 12px var(--primary)",
             transition: "width 0.1s linear",
           }}
         />
@@ -144,11 +140,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         position: "absolute",
         bottom: 32,
         fontSize: "0.65rem",
-        color: "rgba(255,255,255,0.2)",
+        color: "var(--text-3)",
         fontFamily: "var(--font)",
         fontWeight: 500,
         letterSpacing: "0.05em",
-        animation: "splash-fade-in 0.5s ease 0.8s both",
       }}>
         v2.4.1 · Uyo, Akwa Ibom
       </p>

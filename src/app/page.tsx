@@ -156,70 +156,11 @@ export default function Home() {
   const dragStartY = React.useRef(0);
   const dragStartHeight = React.useRef(0);
 
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth <= 768) {
-        // 50% of the usable height above the nav bar
-        setSheetHeight(Math.round((window.innerHeight - 72) * 0.50));
-      }
-    }
-  }, [currentView]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (typeof window === "undefined" || window.innerWidth > 768) return;
-    setIsDraggingSheet(true);
-    dragStartY.current = e.touches[0].clientY;
-    dragStartHeight.current = sheetHeight;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingSheet) return;
-    const clientY = e.touches[0].clientY;
-    const deltaY = dragStartY.current - clientY;
-    const maxH = Math.round((window.innerHeight - 72) * 0.88);
-    const minH = 220;
-    const newH = Math.max(minH, Math.min(maxH, dragStartHeight.current + deltaY));
-    setSheetHeight(newH);
-  };
-
-  const handleTouchEnd = () => {
-    setIsDraggingSheet(false);
-    if (typeof window === "undefined") return;
-    const usableH = window.innerHeight - 72; // subtract nav bar
-    const snapMin = 260;
-    const snapDefault = Math.round(usableH * 0.50);
-    const snapMax = Math.round(usableH * 0.88);
-
-    const diffs = [
-      { val: snapMin, diff: Math.abs(sheetHeight - snapMin) },
-      { val: snapDefault, diff: Math.abs(sheetHeight - snapDefault) },
-      { val: snapMax, diff: Math.abs(sheetHeight - snapMax) },
-    ];
-    diffs.sort((a, b) => a.diff - b.diff);
-    setSheetHeight(diffs[0].val);
-  };
-
-  const handleDragHandleClick = () => {
-    if (typeof window === "undefined") return;
-    const usableH = window.innerHeight - 72;
-    const snapDefault = Math.round(usableH * 0.50);
-    const snapMax = Math.round(usableH * 0.88);
-    if (sheetHeight < snapMax - 50) {
-      setSheetHeight(snapMax);
-    } else {
-      setSheetHeight(snapDefault);
-    }
-  };
-
   // ── Dark Mode Effect ──
   useEffect(() => {
-    const html = document.documentElement;
-    if (settings.darkMode) {
-      html.setAttribute("data-theme", "dark");
-    } else {
-      html.removeAttribute("data-theme");
-    }
+    document.documentElement.setAttribute("data-theme", settings.darkMode ? "dark" : "light");
   }, [settings.darkMode]);
+
 
   // ── Distance calc ──
   useEffect(() => {
@@ -368,210 +309,104 @@ export default function Home() {
   const showMap = currentView === "home" || currentView === "booking" || currentView === "ride";
 
   return (
-    <div className="app-container">
-      {/* Desktop Icon Sidebar */}
-      <div className="desktop-sidebar">
-        <TopNav
-          currentView={currentView}
-          userName={userProfile.fullName}
-          onNavigate={setCurrentView}
-          onLogout={handleLogout}
-        />
+    <div className="app-root">
+
+      {/* ── Map Layer (always behind) ── */}
+      <div className="map-layer">
+        <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} deviceLocation={deviceLocation} />
       </div>
 
-      {/* Control Panel */}
-      <div 
-        className="control-panel"
-        style={{
-          height: typeof window !== "undefined" && window.innerWidth <= 768 ? `${sheetHeight}px` : undefined,
-          transition: isDraggingSheet ? "none" : "height 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-      >
-        {/* Mobile Drag Handle */}
-        <div 
-          className="drag-handle-container"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={handleDragHandleClick}
-          style={{ cursor: "ns-resize" }}
-        >
-          <div className="drag-handle-pill" />
-        </div>
+      {/* ── Screen Layer ── */}
+      <div className="screen-layer">
 
-        {/* Header (shown on home, profile, history, payment, settings views) */}
-        {(currentView === "home" || currentView === "profile" || currentView === "history" || currentView === "payment" || currentView === "settings") && (
-          <header style={{ padding: "clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: "var(--bg-secondary)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {/* Logo */}
-              <div style={{ width: 36, height: 36, borderRadius: "11px", background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-primary)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              </div>
-              <div>
-                <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-heading)", letterSpacing: "-0.02em", display: "block", lineHeight: 1 }}>Glide</span>
-                <span style={{ fontSize: "0.6rem", color: "var(--text-faint)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>UYO · AKWA IBOM</span>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              {/* Notifications badge */}
-              <div style={{ position: "relative" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", position: "absolute", top: -1, right: -1, border: "2px solid var(--bg-secondary)", zIndex: 1 }} />
-                <button
-                  style={{ width: 36, height: 36, border: "1px solid var(--card-border)", borderRadius: "11px", background: "var(--card-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", transition: "all 0.2s" }}
-                  onClick={() => setShowNotifications(true)}
-                  title="Notifications"
-                  onMouseEnter={e => { e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.borderColor = "var(--primary)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--card-border)"; }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                  </svg>
-                </button>
-              </div>
-              {/* Avatar */}
-              <button
-                onClick={() => setCurrentView("profile")}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, var(--primary), #F59E0B)", border: "2px solid var(--bg-secondary)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 900, color: "#fff", fontFamily: "var(--font)", boxShadow: "var(--shadow-primary)", transition: "transform 0.2s var(--ease)" }}
-                title="Profile"
-                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-              >
-                {userProfile.fullName.charAt(0).toUpperCase()}
-              </button>
-            </div>
-          </header>
+        {/* HOME */}
+        {currentView === "home" && (
+          <HomeScreen
+            key="home"
+            userName={userProfile.fullName}
+            recentDestinations={recentDestinations}
+            favoriteHome={userProfile.homeAddress ? { name: "Home", lat: 5.0253, lng: 7.9306, address: userProfile.homeAddress } : undefined}
+            favoriteWork={userProfile.workAddress ? { name: "Work", lat: 5.0480, lng: 7.9520, address: userProfile.workAddress } : undefined}
+            deviceLocation={deviceLocation}
+            onStartBooking={handleStartBooking}
+            onShowNotifications={() => setShowNotifications(true)}
+            onShowProfile={() => setCurrentView("profile")}
+            userInitial={userProfile.fullName.charAt(0).toUpperCase()}
+            avatarColor={userProfile.avatarColor}
+            isBooked={isBooked}
+            rideStatus={rideStatus}
+            selectedCategoryName={selectedCategory?.name}
+            onTrackRide={() => setCurrentView("ride")}
+          />
         )}
 
-        {/* Live Activity Tracker Banner */}
-        {isBooked && currentView !== "ride" && (
-          <div
-            className="animate-slide-up"
-            onClick={() => setCurrentView("ride")}
-            style={{
-              padding: "12px 18px",
-              background: "linear-gradient(135deg, var(--primary-subtle) 0%, var(--sky-subtle) 100%)",
-              borderBottom: "1px solid var(--primary-glow)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
-              gap: "12px",
-              zIndex: 10,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-primary)", flexShrink: 0, animation: "finding-pulse 2s ease-in-out infinite" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
-                  <circle cx="7" cy="17" r="2" />
-                  <circle cx="17" cy="17" r="2" />
-                </svg>
-              </div>
-              <div>
-                <p style={{ fontSize: "0.84rem", fontWeight: 800, color: "var(--text-heading)", letterSpacing: "-0.01em" }}>
-                  {rideStatus === "searching" && "Connecting with driver..."}
-                  {rideStatus === "arriving" && "Driver is arriving shortly"}
-                  {rideStatus === "arrived" && "Driver has arrived outside!"}
-                  {rideStatus === "inprogress" && "On trip to destination"}
-                  {rideStatus === "completed" && "Trip completed"}
-                </p>
-                <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px", fontWeight: 600 }}>
-                  {selectedCategory?.name || "Glide Comfort"} · Marcus Sterling
-                </p>
-              </div>
-            </div>
-            <button
-              style={{
-                padding: "7px 14px",
-                background: "var(--primary)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "var(--r-sm)",
-                fontSize: "0.72rem",
-                fontWeight: 800,
-                cursor: "pointer",
-                fontFamily: "var(--font)",
-                whiteSpace: "nowrap",
-                boxShadow: "var(--shadow-primary)",
-              }}
-            >
-              Track Live →
-            </button>
-          </div>
+        {/* BOOKING */}
+        {currentView === "booking" && (
+          <BookingScreen
+            key="booking"
+            initialPickup={bookingInitialPickup}
+            initialDropoff={bookingInitialDropoff}
+            deviceLocation={deviceLocation}
+            onConfirmed={handleBookingConfirmed}
+            onBack={() => setCurrentView("home")}
+          />
         )}
 
-        {/* Content Area */}
-        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-          {currentView === "home" && (
-            <HomeScreen
-              userName={userProfile.fullName}
-              recentDestinations={recentDestinations}
-              favoriteHome={userProfile.homeAddress ? { name: "Home", lat: 6.4281, lng: 3.4219, address: userProfile.homeAddress } : undefined}
-              favoriteWork={userProfile.workAddress ? { name: "Work", lat: 6.5181, lng: 3.3989, address: userProfile.workAddress } : undefined}
-              deviceLocation={deviceLocation}
-              onStartBooking={handleStartBooking}
-            />
-          )}
+        {/* ACTIVE RIDE */}
+        {currentView === "ride" && (
+          <ActiveRide
+            key="ride"
+            categoryName={selectedCategory?.name || ""}
+            price={bookedPrice}
+            pickupName={pickup?.name || ""}
+            dropoffName={dropoff?.name || ""}
+            status={rideStatus}
+            onStatusChange={setRideStatus}
+            onCancel={handleCancelRide}
+          />
+        )}
 
-          {currentView === "booking" && (
-            <BookingScreen
-              initialPickup={bookingInitialPickup}
-              initialDropoff={bookingInitialDropoff}
-              deviceLocation={deviceLocation}
-              onConfirmed={handleBookingConfirmed}
-              onBack={() => setCurrentView("home")}
-            />
-          )}
+        {/* PAYMENT */}
+        {currentView === "payment" && (
+          <PaymentScreen
+            key="payment"
+            payment={payment}
+            onPaymentChange={setPayment}
+          />
+        )}
 
-          {currentView === "ride" && (
-            <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", flex: 1, padding: "24px" }}>
-              <ActiveRide
-                categoryName={selectedCategory?.name || ""}
-                price={bookedPrice}
-                pickupName={pickup?.name || ""}
-                dropoffName={dropoff?.name || ""}
-                status={rideStatus}
-                onStatusChange={setRideStatus}
-                onCancel={handleCancelRide}
-              />
-            </div>
-          )}
+        {/* HISTORY */}
+        {currentView === "history" && (
+          <RideHistoryScreen
+            key="history"
+            history={rideHistory}
+            onRebook={handleRebook}
+          />
+        )}
 
-          {currentView === "payment" && (
-            <PaymentScreen payment={payment} onPaymentChange={setPayment} />
-          )}
+        {/* PROFILE */}
+        {currentView === "profile" && (
+          <ProfileScreen
+            key="profile"
+            profile={userProfile}
+            onSave={setUserProfile}
+          />
+        )}
 
-          {currentView === "history" && (
-            <RideHistoryScreen history={rideHistory} onRebook={handleRebook} />
-          )}
-
-          {currentView === "profile" && (
-            <ProfileScreen profile={userProfile} onSave={setUserProfile} />
-          )}
-
-          {currentView === "settings" && (
-            <SettingsScreen
-              settings={settings}
-              onSettingsChange={setSettings}
-            />
-          )}
-        </div>
-
-        {/* Bottom Nav (mobile) */}
-        <BottomNav currentView={currentView} onNavigate={setCurrentView} />
+        {/* SETTINGS */}
+        {currentView === "settings" && (
+          <SettingsScreen
+            key="settings"
+            settings={settings}
+            onSettingsChange={setSettings}
+          />
+        )}
       </div>
 
-      {/* Map Container */}
-      {isLoggedIn && showMap && (
-        <div className="map-container">
-          <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} deviceLocation={deviceLocation} />
-        </div>
-      )}
+      {/* ── Floating Bottom Nav ── */}
+      <BottomNav currentView={currentView} onNavigate={setCurrentView} />
 
-      {/* Post-Ride Rating Modal */}
+      {/* ── Post-Ride Rating Modal ── */}
       {pendingRating && (
         <RatingModal
           driverName={pendingRating.driverName}
@@ -584,10 +419,11 @@ export default function Home() {
         />
       )}
 
-      {/* Notifications Panel */}
+      {/* ── Notifications Panel ── */}
       {showNotifications && (
         <NotificationsPanel onClose={() => setShowNotifications(false)} />
       )}
     </div>
   );
 }
+

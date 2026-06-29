@@ -127,69 +127,59 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // ─────────────── WELCOME ───────────────
   if (view === "welcome") {
     return (
-      <div className="animate-fade-in" style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
+      <div className="full-screen animate-fade-in" style={{
         justifyContent: "space-between",
-        padding: "clamp(24px, 5vw, 40px) clamp(16px, 4vw, 32px)",
-        background: "var(--bg-gradient)",
+        padding: "40px 24px",
         position: "relative",
-        overflow: "hidden",
+        background: "var(--bg-deep)",
       }}>
-        {/* Abstract Gradient Glowing Orbs */}
-        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "70vw", height: "70vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(217,95,0,0.12) 0%, transparent 70%)", filter: "blur(40px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "20%", right: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(26,107,60,0.14) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
+        {/* Orbs */}
+        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,107,26,0.1) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "-10%", width: "80vw", height: "80vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,194,255,0.08) 0%, transparent 70%)", filter: "blur(50px)", pointerEvents: "none" }} />
 
-        {/* Top Header - Logo & City Indicator */}
-        <div className="animate-slide-up" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", zIndex: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", zIndex: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
-              width: 38,
-              height: 38,
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 14px rgba(217,95,0,0.25)",
+              width: 38, height: 38, borderRadius: "12px",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "var(--shadow-primary)",
             }}>
               <Zap size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.03em" }}>Glide</span>
+            <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
           </div>
           <span style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            padding: "5px 12px",
-            background: "rgba(26,107,60,0.08)",
-            border: "1px solid rgba(26,107,60,0.18)",
+            padding: "5px 14px",
+            background: "var(--primary-dim)",
+            border: "1px solid var(--primary-glow)",
             borderRadius: "99px",
             fontSize: "0.68rem",
             fontWeight: 800,
-            color: "var(--accent)",
+            color: "var(--primary)",
             letterSpacing: "0.04em",
           }}>
             📍 Uyo Premium
           </span>
         </div>
 
-        {/* Center Section: Beautiful Hero Typography & Premium Cards */}
-        <div className="animate-slide-up" style={{ margin: "auto 0", zIndex: 10, textAlign: "left", width: "100%", maxWidth: 440, padding: "20px 0" }}>
+        {/* Center */}
+        <div style={{ margin: "auto 0", zIndex: 10, width: "100%", maxWidth: 440 }}>
           <h2 style={{
-            fontSize: "clamp(2.2rem, 8vw, 3.2rem)",
+            fontSize: "2.6rem",
             fontWeight: 900,
             lineHeight: 1.05,
-            color: "var(--text-main)",
+            color: "var(--text-1)",
+            fontFamily: "var(--font-display)",
             letterSpacing: "-0.04em"
           }}>
             Fast rides, <br />
-            on <span style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>demand.</span>
+            on <span className="gradient-text">demand.</span>
           </h2>
           <p style={{
-            fontSize: "clamp(0.95rem, 3.5vw, 1.05rem)",
-            color: "var(--text-muted)",
+            fontSize: "0.95rem",
+            color: "var(--text-3)",
             marginTop: "16px",
             lineHeight: 1.5,
             fontWeight: 500,
@@ -198,58 +188,33 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             Experience safe, affordable, and comfortable town rides anywhere in Uyo.
           </p>
 
-          {/* Value Cards instead of basic Pills */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "32px" }}>
-            <div style={{ padding: "14px", background: "rgba(255,255,255,0.45)", border: "1px solid rgba(0,0,0,0.04)", borderRadius: "16px", backdropFilter: "blur(8px)" }}>
-              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(217,95,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", marginBottom: "10px" }}>⚡</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>Instant Rides</p>
-              <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>Avg. wait time under 4 min</p>
+            <div className="glass-card" style={{ padding: "14px" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", marginBottom: "10px" }}>⚡</div>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-1)" }}>Instant Rides</p>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-3)", marginTop: "2px" }}>Wait time under 4 min</p>
             </div>
-            <div style={{ padding: "14px", background: "rgba(255,255,255,0.45)", border: "1px solid rgba(0,0,0,0.04)", borderRadius: "16px", backdropFilter: "blur(8px)" }}>
-              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(26,107,60,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)", marginBottom: "10px" }}>🛡️</div>
-              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-main)" }}>Verified Safety</p>
-              <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "2px" }}>AI companion routes</p>
+            <div className="glass-card" style={{ padding: "14px" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "8px", background: "var(--cyan-dim)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--cyan)", marginBottom: "10px" }}>🛡️</div>
+              <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-1)" }}>Verified Safety</p>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-3)", marginTop: "2px" }}>AI companion routes</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Section: Premium Button Sheet */}
-        <div className="animate-slide-up" style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "14px", marginTop: "auto" }}>
-          <button
-            onClick={() => go("signup")}
-            className="btn btn-primary"
-            style={{
-              padding: "16px",
-              fontSize: "0.95rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-              boxShadow: "0 8px 30px rgba(217,95,0,0.25)",
-            }}
-          >
+        {/* Bottom */}
+        <div style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "12px" }}>
+          <button onClick={() => go("signup")} className="btn btn-primary" style={{ padding: "16px", borderRadius: "var(--r-xl)" }}>
             <span>Create Account</span> <ArrowRight size={16} />
           </button>
           
-          <button
-            onClick={() => go("login")}
-            className="btn btn-secondary"
-            style={{
-              padding: "16px",
-              fontSize: "0.95rem",
-              background: "rgba(255,255,255,0.6)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              color: "var(--text-main)",
-            }}
-          >
+          <button onClick={() => go("login")} className="btn btn-secondary" style={{ padding: "16px", borderRadius: "var(--r-xl)" }}>
             I already have an account
           </button>
 
-          <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
+          <p style={{ fontSize: "0.72rem", color: "var(--text-3)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
             By getting started, you agree to our <br />
-            <span style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer" }}>Terms of Service</span> & <span style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer" }}>Privacy Policy</span>
+            <span style={{ color: "var(--primary)", fontWeight: 700 }}>Terms of Service</span> &amp; <span style={{ color: "var(--primary)", fontWeight: 700 }}>Privacy Policy</span>
           </p>
         </div>
       </div>
@@ -259,16 +224,16 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // ─────────────── FORGOT PASSWORD SENT ───────────────
   if (view === "forgot-sent") {
     return (
-      <div className="animate-fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 28px" }}>
+      <div className="full-screen animate-fade-in" style={{ alignItems: "center", justifyContent: "center", padding: "32px 28px" }}>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", maxWidth: 380 }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(26,107,60,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ShieldCheck size={32} style={{ color: "var(--accent)" }} />
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ShieldCheck size={32} style={{ color: "var(--green)" }} />
           </div>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-main)" }}>Check your email</h2>
-          <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            We sent a password reset link to <strong style={{ color: "var(--text-main)" }}>{forgotEmail || "your email"}</strong>. Check your inbox and follow the instructions.
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-1)", fontFamily: "var(--font-display)" }}>Check your email</h2>
+          <p style={{ fontSize: "0.88rem", color: "var(--text-3)", lineHeight: 1.6 }}>
+            We sent a password reset link to <strong style={{ color: "var(--text-1)" }}>{forgotEmail}</strong>.
           </p>
-          <button onClick={() => go("login")} className="btn btn-primary" style={{ marginTop: "8px", padding: "14px 32px", width: "100%" }}>
+          <button onClick={() => go("login")} className="btn btn-primary" style={{ marginTop: "8px", width: "100%" }}>
             Back to Login
           </button>
         </div>
@@ -279,17 +244,14 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // ─────────────── FORGOT PASSWORD ───────────────
   if (view === "forgot") {
     return (
-      <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 28px 32px" }}>
-        <button onClick={() => go("login")} style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}>
+      <div className="full-screen animate-screen-in" style={{ padding: "60px 24px" }}>
+        <button onClick={() => go("login")} className="back-btn" style={{ border: "none", background: "none", color: "var(--text-3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", marginBottom: "32px" }}>
           <ArrowLeft size={16} /> Back to Login
         </button>
         <div style={{ marginBottom: "32px" }}>
-          <div style={{ width: 56, height: 56, borderRadius: "18px", background: "rgba(217,95,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
-            <Mail size={26} style={{ color: "var(--primary)" }} />
-          </div>
-          <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.01em" }}>Forgot Password?</h2>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "6px", lineHeight: 1.6 }}>
-            No worries! Enter your email and we'll send you a reset link.
+          <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>Forgot Password?</h2>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginTop: "6px", lineHeight: 1.6 }}>
+            Enter your email and we'll send you a reset link.
           </p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -298,18 +260,19 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             value={forgotEmail}
             onChange={e => setForgotEmail(e.target.value)}
             placeholder="your@email.com"
-            style={{ padding: "14px 16px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
+            className="input-field"
+            style={{ paddingLeft: "16px" }}
           />
-          {error && <p style={{ color: "#dc2626", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
+          {error && <p style={{ color: "var(--red)", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
           <button
             onClick={() => {
               if (!forgotEmail.includes("@")) { setError("Enter a valid email"); return; }
               go("forgot-sent");
             }}
             className="btn btn-primary"
-            style={{ padding: "15px", fontSize: "0.95rem" }}
+            style={{ borderRadius: "var(--r-xl)" }}
           >
-            Send Reset Link <ArrowRight size={18} />
+            Send Reset Link <ArrowRight size={16} />
           </button>
         </div>
       </div>
@@ -320,20 +283,17 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   if (view === "otp") {
     const allFilled = otp.every(d => d !== "");
     return (
-      <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "60px 28px 32px" }}>
-        <button onClick={() => { go("signup"); setSignupStep(2); }} style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}>
+      <div className="full-screen animate-screen-in" style={{ padding: "60px 24px" }}>
+        <button onClick={() => { go("signup"); setSignupStep(2); }} style={{ border: "none", background: "none", color: "var(--text-3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", marginBottom: "32px" }}>
           <ArrowLeft size={16} /> Back
         </button>
         <div style={{ marginBottom: "32px" }}>
-          <div style={{ width: 56, height: 56, borderRadius: "18px", background: "rgba(217,95,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
-            <Phone size={26} style={{ color: "var(--primary)" }} />
-          </div>
-          <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.01em" }}>Verify your number</h2>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "6px", lineHeight: 1.6 }}>
-            We sent a 6-digit code to <strong style={{ color: "var(--text-main)" }}>{phone || "+234 800 000 0000"}</strong>
+          <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--text-1)", fontFamily: "var(--font-display)" }}>Verify your number</h2>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginTop: "6px" }}>
+            We sent a 6-digit code to <strong style={{ color: "var(--text-1)" }}>{phone || "+234 800 000 0000"}</strong>
           </p>
           {otpAutoFilling && (
-            <p style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 600, marginTop: "4px" }}>📲 Auto-filling from SMS...</p>
+            <p style={{ fontSize: "0.75rem", color: "var(--cyan)", fontWeight: 600, marginTop: "6px" }}>📲 Auto-filling from SMS...</p>
           )}
         </div>
 
@@ -353,24 +313,24 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           ))}
         </div>
 
-        {error && <p style={{ color: "#dc2626", fontSize: "0.82rem", fontWeight: 600, textAlign: "center", marginBottom: "12px" }}>{error}</p>}
+        {error && <p style={{ color: "var(--red)", fontSize: "0.82rem", fontWeight: 600, textAlign: "center", marginBottom: "12px" }}>{error}</p>}
 
         <button
           onClick={handleVerifyOtp}
           disabled={!allFilled || loading}
           className="btn btn-primary"
-          style={{ padding: "15px", fontSize: "0.95rem", opacity: allFilled ? 1 : 0.5, marginBottom: "16px" }}
+          style={{ opacity: allFilled ? 1 : 0.5, marginBottom: "16px", borderRadius: "var(--r-xl)" }}
         >
-          {loading ? "Verifying..." : "Verify & Create Account"} {!loading && <ArrowRight size={18} />}
+          {loading ? "Verifying..." : "Verify & Create Account"} {!loading && <ArrowRight size={16} />}
         </button>
 
-        <div style={{ textAlign: "center", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+        <div style={{ textAlign: "center", fontSize: "0.82rem", color: "var(--text-3)" }}>
           {otpTimer > 0 ? (
-            <span>Resend code in <strong style={{ color: "var(--text-main)" }}>{otpTimer}s</strong></span>
+            <span>Resend code in <strong style={{ color: "var(--text-1)" }}>{otpTimer}s</strong></span>
           ) : (
             <button
               onClick={() => { setOtp(["", "", "", "", "", ""]); setOtpTimer(30); setError(""); }}
-              style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: "0.82rem" }}
+              style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontSize: "0.82rem" }}
             >
               Resend OTP
             </button>
@@ -383,22 +343,22 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   // ─────────────── LOGIN ───────────────
   if (view === "login") {
     return (
-      <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "clamp(40px, 8vw, 72px) clamp(20px, 6vw, 36px) clamp(24px, 5vw, 40px)" }}>
-        <button onClick={() => go("welcome")} style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}>
+      <div className="full-screen animate-screen-in" style={{ padding: "60px 24px" }}>
+        <button onClick={() => go("welcome")} style={{ border: "none", background: "none", color: "var(--text-3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", marginBottom: "32px" }}>
           <ArrowLeft size={16} /> Back
         </button>
         <div style={{ marginBottom: "28px" }}>
-          <h2 style={{ fontSize: "1.7rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Welcome back 👋</h2>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "6px" }}>Sign in to continue your journeys</p>
+          <h2 style={{ fontSize: "1.7rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>Welcome back 👋</h2>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginTop: "6px" }}>Sign in to continue your journeys</p>
         </div>
 
         {/* Method Toggle */}
         <div className="tab-bar" style={{ marginBottom: "20px" }}>
           <button className={`tab-item${authMethod === "phone" ? " active" : ""}`} onClick={() => setAuthMethod("phone")}>
-            <Phone size={13} style={{ display: "inline", marginRight: "5px" }} /> Phone
+            Phone
           </button>
           <button className={`tab-item${authMethod === "email" ? " active" : ""}`} onClick={() => setAuthMethod("email")}>
-            <Mail size={13} style={{ display: "inline", marginRight: "5px" }} /> Email
+            Email
           </button>
         </div>
 
@@ -409,7 +369,8 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               value={phone}
               onChange={e => setPhone(e.target.value)}
               placeholder="+234 800 000 0000"
-              style={{ padding: "14px 16px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
+              className="input-field"
+              style={{ paddingLeft: "16px" }}
             />
           ) : (
             <input
@@ -417,7 +378,8 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
-              style={{ padding: "14px 16px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
+              className="input-field"
+              style={{ paddingLeft: "16px" }}
             />
           )}
           <div style={{ position: "relative" }}>
@@ -426,11 +388,12 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Password"
-              style={{ padding: "14px 48px 14px 16px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
+              className="input-field"
+              style={{ paddingLeft: "16px", paddingRight: "48px" }}
             />
             <button
               onClick={() => setShowPassword(!showPassword)}
-              style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-muted)" }}
+              style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-3)" }}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -438,20 +401,20 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
           <button
             onClick={() => go("forgot")}
-            style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: "0.82rem", textAlign: "right" }}
+            style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", fontSize: "0.82rem", textAlign: "right" }}
           >
             Forgot password?
           </button>
 
-          {error && <p style={{ color: "#dc2626", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
+          {error && <p style={{ color: "var(--red)", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
 
-          <button onClick={handleLogin} disabled={loading} className="btn btn-primary" style={{ padding: "15px", fontSize: "0.95rem", marginTop: "4px" }}>
-            {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight size={18} /></>}
+          <button onClick={handleLogin} disabled={loading} className="btn btn-primary" style={{ marginTop: "4px", borderRadius: "var(--r-xl)" }}>
+            {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight size={16} /></>}
           </button>
 
-          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "8px" }}>
+          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-3)", marginTop: "8px" }}>
             Don't have an account?{" "}
-            <button onClick={() => go("signup")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>
+            <button onClick={() => go("signup")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>
               Sign Up
             </button>
           </p>
@@ -462,81 +425,76 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
 
   // ─────────────── SIGN UP ───────────────
   return (
-    <div className="animate-slide-right" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", padding: "clamp(40px, 8vw, 72px) clamp(20px, 6vw, 36px) clamp(24px, 5vw, 40px)" }}>
+    <div className="full-screen animate-screen-in" style={{ padding: "60px 24px" }}>
       <button
         onClick={() => { if (signupStep > 1) { setSignupStep(1); setError(""); } else go("welcome"); }}
-        style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", fontFamily: "var(--font-sans)", marginBottom: "32px" }}
+        style={{ border: "none", background: "none", color: "var(--text-3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", marginBottom: "32px" }}
       >
         <ArrowLeft size={16} /> {signupStep > 1 ? "Back" : "Home"}
       </button>
 
       <div style={{ marginBottom: "28px" }}>
-        <h2 style={{ fontSize: "1.7rem", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.02em" }}>
-          {signupStep === 1 ? "Create account" : "Your contacts"}
+        <h2 style={{ fontSize: "1.7rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
+          {signupStep === 1 ? "Create account" : "Your details"}
         </h2>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "6px" }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-3)", marginTop: "6px" }}>
           {signupStep === 1 ? "Step 1 of 2 — Tell us your name" : "Step 2 of 2 — Almost there!"}
         </p>
         <div style={{ display: "flex", gap: "6px", marginTop: "14px" }}>
           <div style={{ height: "3px", flex: 1, borderRadius: "99px", background: "var(--primary)" }} />
-          <div style={{ height: "3px", flex: 1, borderRadius: "99px", background: signupStep === 2 ? "var(--primary)" : "rgba(0,0,0,0.08)" }} />
+          <div style={{ height: "3px", flex: 1, borderRadius: "99px", background: signupStep === 2 ? "var(--primary)" : "var(--border)" }} />
         </div>
       </div>
 
       {signupStep === 1 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div style={{ position: "relative" }}>
-            <User size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-            <input
-              type="text"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              placeholder="Full Name"
-              style={{ padding: "14px 14px 14px 40px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
-            />
-          </div>
-          {error && <p style={{ color: "#dc2626", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
-          <button onClick={handleSignupStep1} className="btn btn-primary" style={{ padding: "15px", fontSize: "0.95rem", marginTop: "4px" }}>
-            Continue <ArrowRight size={18} />
+          <input
+            type="text"
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            placeholder="Full Name"
+            className="input-field"
+            style={{ paddingLeft: "16px" }}
+          />
+          {error && <p style={{ color: "var(--red)", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
+          <button onClick={handleSignupStep1} className="btn btn-primary" style={{ marginTop: "4px", borderRadius: "var(--r-xl)" }}>
+            Continue <ArrowRight size={16} />
           </button>
-          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-3)" }}>
             Already have an account?{" "}
-            <button onClick={() => go("login")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>
+            <button onClick={() => go("login")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>
               Sign In
             </button>
           </p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div style={{ position: "relative" }}>
-            <Phone size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-            <input
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="+234 800 000 0000"
-              style={{ padding: "14px 14px 14px 40px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
-            />
-          </div>
-          <div style={{ position: "relative" }}>
-            <Mail size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Email address"
-              style={{ padding: "14px 14px 14px 40px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
-            />
-          </div>
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder="Phone Number"
+            className="input-field"
+            style={{ paddingLeft: "16px" }}
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Email address"
+            className="input-field"
+            style={{ paddingLeft: "16px" }}
+          />
           <div style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Create password"
-              style={{ padding: "14px 48px 14px 16px", border: "1.5px solid var(--card-border-focus)", borderRadius: "14px", fontSize: "0.95rem", fontFamily: "var(--font-sans)", color: "var(--text-main)", background: "rgba(0,0,0,0.01)", outline: "none", width: "100%" }}
+              className="input-field"
+              style={{ paddingLeft: "16px", paddingRight: "48px" }}
             />
-            <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-muted)" }}>
+            <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-3)" }}>
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -549,21 +507,21 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               onChange={e => setAgreedToTerms(e.target.checked)}
               style={{ width: 18, height: 18, marginTop: "1px", accentColor: "var(--primary)", flexShrink: 0 }}
             />
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+            <span style={{ fontSize: "0.8rem", color: "var(--text-3)", lineHeight: 1.5 }}>
               I agree to Glide's <span style={{ color: "var(--primary)", fontWeight: 600 }}>Terms of Service</span> and{" "}
               <span style={{ color: "var(--primary)", fontWeight: 600 }}>Privacy Policy</span>
             </span>
           </label>
 
-          {error && <p style={{ color: "#dc2626", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
+          {error && <p style={{ color: "var(--red)", fontSize: "0.82rem", fontWeight: 600 }}>{error}</p>}
 
-          <button onClick={handleSignupSubmit} disabled={loading} className="btn btn-primary" style={{ padding: "15px", fontSize: "0.95rem", marginTop: "4px" }}>
-            {loading ? "Creating account..." : <><span>Create Account</span><ArrowRight size={18} /></>}
+          <button onClick={handleSignupSubmit} disabled={loading} className="btn btn-primary" style={{ marginTop: "4px", borderRadius: "var(--r-xl)" }}>
+            {loading ? "Creating account..." : <><span>Create Account</span><ArrowRight size={16} /></>}
           </button>
 
-          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          <p style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-3)" }}>
             Already have an account?{" "}
-            <button onClick={() => go("login")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>
+            <button onClick={() => go("login")} style={{ border: "none", background: "none", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>
               Sign In
             </button>
           </p>

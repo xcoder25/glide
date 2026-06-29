@@ -23,11 +23,11 @@ const SEED_NOTIFICATIONS: Notification[] = [
 ];
 
 const TYPE_CONFIG: Record<Notification["type"], { color: string; bg: string; border: string; icon: React.ReactNode; label: string }> = {
-  ride:   { color: "var(--primary)", bg: "var(--primary-subtle)", border: "var(--primary-glow)", icon: <Zap size={15} />, label: "Ride" },
-  promo:  { color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)", icon: <Tag size={15} />, label: "Promo" },
-  safety: { color: "var(--danger)", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.2)", icon: <AlertTriangle size={15} />, label: "Safety" },
-  rating: { color: "var(--success)", bg: "var(--success-subtle)", border: "var(--success-glow)", icon: <Star size={15} />, label: "Rating" },
-  system: { color: "var(--text-muted)", bg: "rgba(0,0,0,0.04)", border: "var(--card-border)", icon: <Bell size={15} />, label: "System" },
+  ride:   { color: "var(--primary)", bg: "var(--primary-dim)", border: "var(--primary-glow)", icon: <Zap size={15} />, label: "Ride" },
+  promo:  { color: "var(--amber)", bg: "var(--amber-dim)", border: "rgba(255,176,32,0.2)", icon: <Tag size={15} />, label: "Promo" },
+  safety: { color: "var(--red)", bg: "var(--red-dim)", border: "rgba(255,77,106,0.2)", icon: <AlertTriangle size={15} />, label: "Safety" },
+  rating: { color: "var(--green)", bg: "var(--green-dim)", border: "var(--green-glow)", icon: <Star size={15} />, label: "Rating" },
+  system: { color: "var(--text-3)", bg: "var(--bg-elevated)", border: "var(--border)", icon: <Bell size={15} />, label: "System" },
 };
 
 export default function NotificationsPanel({ onClose }: { onClose: () => void }) {
@@ -51,34 +51,33 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
         className="animate-slide-right"
         onClick={e => e.stopPropagation()}
         style={{
-          background: "var(--bg-secondary)",
+          background: "var(--bg-surface)",
           width: "100%",
           maxWidth: 400,
           height: "100vh",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          borderLeft: "1px solid var(--card-border)",
-          boxShadow: "-8px 0 40px rgba(0,0,0,0.15)",
+          borderLeft: "1px solid var(--border)",
+          boxShadow: "var(--shadow-xl)",
         }}
       >
         {/* Header */}
         <div style={{
           padding: "24px 20px 16px 20px",
-          borderBottom: "1px solid var(--card-border)",
+          borderBottom: "1px solid var(--border)",
           position: "sticky",
           top: 0,
-          background: "var(--bg-secondary)",
+          background: "var(--bg-surface)",
           zIndex: 10,
-          backdropFilter: "blur(20px)",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "var(--primary-subtle)", border: "1px solid var(--primary-glow)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "10px", background: "var(--primary-dim)", border: "1px solid var(--primary-glow)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Bell size={16} style={{ color: "var(--primary)" }} />
               </div>
               <div>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-heading)", lineHeight: 1, letterSpacing: "-0.02em" }}>Notifications</h3>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", lineHeight: 1, letterSpacing: "-0.02em" }}>Notifications</h3>
                 {unreadCount > 0 && (
                   <p style={{ fontSize: "0.68rem", color: "var(--primary)", fontWeight: 700, marginTop: "2px" }}>
                     {unreadCount} unread
@@ -90,19 +89,12 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  style={{ display: "flex", alignItems: "center", gap: "4px", border: "1px solid var(--card-border-strong)", background: "var(--card-bg)", borderRadius: "8px", padding: "6px 10px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 700, color: "var(--text-muted)", fontFamily: "var(--font)", transition: "all 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.borderColor = "var(--primary)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--card-border-strong)"; }}
+                  style={{ display: "flex", alignItems: "center", gap: "4px", border: "1.5px solid var(--border)", background: "var(--bg-elevated)", borderRadius: "8px", padding: "6px 10px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 800, color: "var(--text-2)", fontFamily: "var(--font)" }}
                 >
-                  <CheckCheck size={12} /> Mark all read
+                  <CheckCheck size={12} /> Mark all
                 </button>
               )}
-              <button
-                onClick={onClose}
-                style={{ border: "1px solid var(--card-border)", background: "var(--card-bg)", borderRadius: "10px", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-muted)", transition: "all 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.color = "var(--danger)"; e.currentTarget.style.borderColor = "var(--danger)"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--card-border)"; }}
-              >
+              <button onClick={onClose} className="back-btn" style={{ width: 34, height: 34 }}>
                 <X size={15} />
               </button>
             </div>
@@ -117,9 +109,9 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
                 style={{
                   padding: "6px 16px",
                   borderRadius: "99px",
-                  border: `1px solid ${filter === f ? "var(--primary)" : "var(--card-border)"}`,
+                  border: `1px solid ${filter === f ? "var(--primary)" : "var(--border)"}`,
                   background: filter === f ? "var(--primary)" : "transparent",
-                  color: filter === f ? "#fff" : "var(--text-muted)",
+                  color: filter === f ? "#fff" : "var(--text-2)",
                   fontSize: "0.72rem",
                   fontWeight: 800,
                   cursor: "pointer",
@@ -137,11 +129,11 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
         {/* List */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 24px", color: "var(--text-faint)", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--card-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ textAlign: "center", padding: "60px 24px", color: "var(--text-4)", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Inbox size={28} style={{ opacity: 0.5 }} />
               </div>
-              <p style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-muted)" }}>All clear!</p>
+              <p style={{ fontSize: "0.9rem", fontWeight: 700 }}>All clear!</p>
               <p style={{ fontSize: "0.78rem", fontWeight: 500 }}>No notifications to show.</p>
             </div>
           ) : (
@@ -155,14 +147,12 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
                     display: "flex",
                     gap: "12px",
                     padding: "16px 20px",
-                    borderBottom: "1px solid var(--card-border)",
-                    background: notif.read ? "transparent" : "rgba(249,115,22,0.02)",
+                    borderBottom: "1px solid var(--border)",
+                    background: notif.read ? "transparent" : "rgba(255,107,26,0.02)",
                     cursor: "pointer",
                     transition: "background 0.15s",
                     position: "relative",
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "var(--primary-subtle)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = notif.read ? "transparent" : "rgba(249,115,22,0.02)"; }}
                 >
                   {/* Unread indicator */}
                   {!notif.read && (
@@ -171,7 +161,7 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
 
                   {/* Icon */}
                   <div style={{
-                    width: 40, height: 40,
+                    width: 38, height: 38,
                     borderRadius: "12px",
                     background: cfg.bg,
                     border: `1px solid ${cfg.border}`,
@@ -186,30 +176,27 @@ export default function NotificationsPanel({ onClose }: { onClose: () => void })
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-                      <p style={{ fontSize: "0.86rem", fontWeight: notif.read ? 600 : 800, color: "var(--text-heading)", lineHeight: 1.3 }}>
+                      <p style={{ fontSize: "0.86rem", fontWeight: notif.read ? 600 : 800, color: "var(--text-1)", lineHeight: 1.3 }}>
                         {notif.title}
                       </p>
                       <button
                         onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
-                        style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-faint)", flexShrink: 0, padding: 2, transition: "color 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.color = "var(--danger)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = "var(--text-faint)"; }}
+                        style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-4)", flexShrink: 0, padding: 2 }}
                       >
                         <X size={12} />
                       </button>
                     </div>
-                    <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", lineHeight: 1.5, fontWeight: 500 }}>
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-2)", marginTop: "4px", lineHeight: 1.5, fontWeight: 500 }}>
                       {notif.body}
                     </p>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-                      <span style={{ fontSize: "0.65rem", color: "var(--text-faint)", fontWeight: 600 }}>{notif.time}</span>
+                      <span style={{ fontSize: "0.65rem", color: "var(--text-3)", fontWeight: 600 }}>{notif.time}</span>
                       {notif.action && (
                         <button style={{
                           display: "flex", alignItems: "center", gap: "3px",
                           border: "none", background: "none",
                           color: cfg.color, fontSize: "0.7rem", fontWeight: 800,
                           cursor: "pointer", fontFamily: "var(--font)",
-                          transition: "opacity 0.15s",
                         }}>
                           {notif.action} <ChevronRight size={11} />
                         </button>

@@ -20,19 +20,18 @@ interface ProfileScreenProps {
 }
 
 const AVATAR_COLORS = [
-  "#F97316", "#EF4444", "#8B5CF6", "#0EA5E9",
-  "#10B981", "#F59E0B", "#EC4899", "#6366F1",
+  "#FF6B1A", "#FF4D6A", "#8B5CF6", "#00C2FF",
+  "#00D97E", "#FFB020", "#EC4899", "#6366F1",
 ];
 
 const TIER_CONFIG = {
   Bronze:   { min: 0,   max: 10,  next: "Silver",  color: "#CD7F32", gradient: "linear-gradient(135deg, #CD7F32, #a0522d)" },
   Silver:   { min: 10,  max: 25,  next: "Gold",    color: "#C0C0C0", gradient: "linear-gradient(135deg, #C0C0C0, #808080)" },
-  Gold:     { min: 25,  max: 50,  next: "Emerald", color: "#F59E0B", gradient: "linear-gradient(135deg, #F59E0B, #d97706)" },
-  Emerald:  { min: 50,  max: 100, next: "Diamond", color: "#10B981", gradient: "linear-gradient(135deg, #10B981, #059669)" },
-  Diamond:  { min: 100, max: 100, next: "Diamond", color: "#0EA5E9", gradient: "linear-gradient(135deg, #0EA5E9, #0284c7)" },
+  Gold:     { min: 25,  max: 50,  next: "Emerald", color: "#FFB020", gradient: "linear-gradient(135deg, #FFB020, #d97706)" },
+  Emerald:  { min: 50,  max: 100, next: "Diamond", color: "#00D97E", gradient: "linear-gradient(135deg, #00D97E, #059669)" },
+  Diamond:  { min: 100, max: 100, next: "Diamond", color: "#00C2FF", gradient: "linear-gradient(135deg, #00C2FF, #0284c7)" },
 };
 
-// Simulated: user has 62 completed rides (Emerald tier)
 const USER_RIDES = 62;
 const USER_SPENT = 43500;
 const MEMBER_SINCE = "Jan 2024";
@@ -84,8 +83,8 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
     placeholder: string;
     type?: string;
   }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-      <label style={{ fontSize: "0.67rem", fontWeight: 800, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "5px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <label className="section-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
         {icon} {label}
       </label>
       {editing ? (
@@ -96,45 +95,45 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
           placeholder={placeholder}
           style={{
             padding: "12px 14px",
-            border: "1.5px solid var(--card-border-strong)",
+            border: "1.5px solid var(--border-med)",
             borderRadius: "var(--r-md)",
-            fontSize: "0.9rem",
+            fontSize: "0.92rem",
             fontFamily: "var(--font)",
-            background: "var(--bg-secondary)",
-            color: "var(--text-heading)",
+            background: "var(--bg-surface)",
+            color: "var(--text-1)",
             outline: "none",
             width: "100%",
             fontWeight: 500,
             transition: "border-color 0.2s",
           }}
-          onFocus={e => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--primary-glow)"; }}
-          onBlur={e => { e.currentTarget.style.borderColor = "var(--card-border-strong)"; e.currentTarget.style.boxShadow = "none"; }}
+          onFocus={e => { e.currentTarget.style.borderColor = "var(--primary)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "var(--border-med)"; }}
         />
       ) : (
         <div style={{
           padding: "12px 14px",
-          border: "1px solid var(--card-border)",
+          border: "1px solid var(--border)",
           borderRadius: "var(--r-md)",
-          fontSize: "0.9rem",
-          color: draft[fieldKey] ? "var(--text-body)" : "var(--text-faint)",
-          background: "var(--card-bg)",
+          fontSize: "0.92rem",
+          color: draft[fieldKey] ? "var(--text-1)" : "var(--text-3)",
+          background: "var(--bg-elevated)",
           fontWeight: draft[fieldKey] ? 600 : 400,
           fontFamily: "var(--font)",
         }}>
-          {(draft[fieldKey] as string) || <span style={{ fontStyle: "italic", opacity: 0.5 }}>{placeholder}</span>}
+          {(draft[fieldKey] as string) || <span style={{ fontStyle: "italic", opacity: 0.4 }}>{placeholder}</span>}
         </div>
       )}
     </div>
   );
 
-  const SectionCard = ({ title, titleColor = "var(--text-faint)", borderColor = "var(--card-border)", bg = "var(--card-bg)", children }: {
+  const SectionCard = ({ title, titleColor = "var(--text-3)", borderColor = "var(--border)", bg = "var(--bg-surface)", children }: {
     title: React.ReactNode;
     titleColor?: string;
     borderColor?: string;
     bg?: string;
     children: React.ReactNode;
   }) => (
-    <div style={{ padding: "18px", background: bg, borderRadius: "var(--r-lg)", border: `1px solid ${borderColor}`, display: "flex", flexDirection: "column", gap: "14px", boxShadow: "var(--shadow-sm)" }}>
+    <div className="glass-card" style={{ padding: "18px", background: bg, borderColor, display: "flex", flexDirection: "column", gap: "14px" }}>
       <p style={{ fontSize: "0.68rem", fontWeight: 800, color: titleColor, textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "6px" }}>{title}</p>
       {children}
     </div>
@@ -150,75 +149,71 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
   const avatarBg = draft.avatarColor || "var(--primary)";
 
   return (
-    <div className="animate-slide-right" style={{ display: "flex", flexDirection: "column", height: "100%", overflowY: "auto" }}>
+    <div className="full-screen animate-screen-in">
 
       {/* Profile Hero Banner */}
       <div style={{
-        background: "linear-gradient(135deg, var(--primary) 0%, #F59E0B 100%)",
-        padding: "28px 24px 60px 24px",
-        color: "#fff",
+        background: "linear-gradient(135deg, #0d1421 0%, var(--bg-deep) 100%)",
+        padding: "24px 20px 48px 20px",
+        borderBottom: "1px solid var(--border)",
         position: "relative",
-        overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -60, left: -20, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
-
         {/* Top Row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <p style={{ fontSize: "0.62rem", fontWeight: 800, opacity: 0.75, letterSpacing: "0.1em", textTransform: "uppercase" }}>My Profile</p>
-            <h2 style={{ fontSize: "1.3rem", fontWeight: 900, marginTop: "4px", letterSpacing: "-0.02em", lineHeight: 1 }}>Account</h2>
+            <p style={{ fontSize: "0.68rem", fontWeight: 800, color: "var(--text-3)", letterSpacing: "0.08em", textTransform: "uppercase" }}>My Account</p>
+            <h2 style={{ fontSize: "1.4rem", fontWeight: 900, marginTop: "4px", color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>Profile</h2>
           </div>
           {editing ? (
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={handleCancel} style={{ padding: "8px 14px", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: "5px" }}>
-                <X size={13} /> Cancel
+              <button onClick={handleCancel} className="btn btn-secondary" style={{ padding: "8px 14px", fontSize: "0.78rem", borderRadius: "10px", width: "auto" }}>
+                Cancel
               </button>
-              <button onClick={handleSave} style={{ padding: "8px 16px", background: "rgba(255,255,255,0.25)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "0.78rem", fontWeight: 800, fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: "5px" }}>
-                <Save size={13} /> Save
+              <button onClick={handleSave} className="btn btn-primary" style={{ padding: "8px 16px", fontSize: "0.78rem", borderRadius: "10px", width: "auto" }}>
+                Save
               </button>
             </div>
           ) : (
-            <button onClick={() => setEditing(true)} style={{ padding: "8px 16px", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "0.78rem", fontWeight: 800, fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: "5px", transition: "all 0.2s" }}>
-              <Edit3 size={13} /> Edit Profile
+            <button onClick={() => setEditing(true)} className="btn btn-secondary" style={{ padding: "8px 16px", fontSize: "0.78rem", borderRadius: "10px", width: "auto" }}>
+              Edit Profile
             </button>
           )}
         </div>
 
         {/* Avatar + Name */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "20px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "24px" }}>
           <div style={{ position: "relative" }}>
-            <div
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
               style={{
                 width: 72, height: 72,
                 borderRadius: "50%",
                 background: avatarBg,
-                border: "3px solid rgba(255,255,255,0.5)",
+                border: "3px solid var(--bg-surface)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "1.8rem", fontWeight: 900, color: "#fff",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                fontSize: "1.8rem", fontWeight: 950, color: "#fff",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
                 cursor: "pointer",
-                transition: "transform 0.2s",
+                fontFamily: "var(--font-display)",
               }}
-              onClick={() => setShowColorPicker(!showColorPicker)}
-              title="Tap to change avatar color"
+              title="Change color"
             >
               {draft.fullName?.charAt(0)?.toUpperCase() || "?"}
-            </div>
+            </button>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
               style={{
                 position: "absolute", bottom: 0, right: 0,
-                width: 26, height: 26,
+                width: 24, height: 24,
                 borderRadius: "50%",
                 background: "#fff",
                 border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-sm)",
               }}
             >
-              <Camera size={12} style={{ color: "var(--primary)" }} />
+              <Camera size={11} style={{ color: "var(--primary)" }} />
             </button>
 
             {/* Color Picker Popover */}
@@ -227,35 +222,29 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
                 className="animate-slide-up"
                 style={{
                   position: "absolute", top: 80, left: 0,
-                  background: "var(--bg-secondary)",
-                  border: "1px solid var(--card-border)",
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-med)",
                   borderRadius: "var(--r-md)",
-                  padding: "12px",
+                  padding: "10px",
                   display: "grid",
                   gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: "8px",
-                  boxShadow: "var(--shadow-lg)",
-                  zIndex: 10,
-                  width: 160,
+                  gap: "6px",
+                  boxShadow: "var(--shadow-xl)",
+                  zIndex: 20,
+                  width: 150,
                 }}
-                onClick={e => e.stopPropagation()}
               >
                 {AVATAR_COLORS.map(color => (
                   <button
                     key={color}
                     onClick={() => handleColorSelect(color)}
                     style={{
-                      width: 28, height: 28,
+                      width: 26, height: 26,
                       borderRadius: "50%",
                       background: color,
-                      border: draft.avatarColor === color ? "2.5px solid var(--text-heading)" : "2.5px solid transparent",
+                      border: draft.avatarColor === color ? "2px solid var(--text-1)" : "2px solid transparent",
                       cursor: "pointer",
-                      transition: "transform 0.15s",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.2)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = ""; }}
-                    title={color}
                   />
                 ))}
               </div>
@@ -263,127 +252,117 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
           </div>
 
           <div>
-            <p style={{ fontSize: "1.15rem", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.02em" }}>{draft.fullName || "Your Name"}</p>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "5px" }}>
-              <span style={{ fontSize: "0.65rem", fontWeight: 900, background: "rgba(255,255,255,0.2)", padding: "2px 8px", borderRadius: "99px", letterSpacing: "0.04em" }}>
+            <p style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>{draft.fullName || "Your Name"}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "4px" }}>
+              <span style={{ fontSize: "0.62rem", fontWeight: 900, background: "var(--primary-dim)", color: "var(--primary)", padding: "2px 8px", borderRadius: "99px", letterSpacing: "0.04em", border: "1px solid var(--primary-glow)" }}>
                 {tier}
               </span>
-              <span style={{ fontSize: "0.65rem", opacity: 0.75, fontWeight: 600 }}>Glide Member</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "6px" }}>
-              {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: "0.6rem" }}>⭐</span>)}
-              <span style={{ fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px", fontWeight: 600 }}>4.9 passenger rating</span>
+              <span style={{ fontSize: "0.72rem", color: "var(--text-3)", fontWeight: 600 }}>Glide VIP Member</span>
             </div>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "20px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "24px" }}>
           {[
             { icon: <TrendingUp size={13} />, label: "Total Rides", value: USER_RIDES },
-            { icon: null, label: "Total Spent", value: `₦${(USER_SPENT / 1000).toFixed(1)}k` },
-            { icon: <Clock size={13} />, label: "Member Since", value: MEMBER_SINCE },
+            { icon: null, label: "Spent", value: `₦${(USER_SPENT / 1000).toFixed(1)}k` },
+            { icon: <Clock size={13} />, label: "Since", value: MEMBER_SINCE },
           ].map((s, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.15)", borderRadius: "10px", padding: "10px", textAlign: "center", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              <p style={{ fontSize: "1rem", fontWeight: 900, lineHeight: 1 }}>{s.value}</p>
-              <p style={{ fontSize: "0.58rem", opacity: 0.75, marginTop: "3px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{s.label}</p>
+            <div key={i} className="glass-card" style={{ padding: "10px", textAlign: "center" }}>
+              <p style={{ fontSize: "1rem", fontWeight: 900, color: "var(--text-1)" }}>{s.value}</p>
+              <p style={{ fontSize: "0.6rem", color: "var(--text-3)", marginTop: "3px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{s.label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Content — overlaps banner */}
-      <div style={{ padding: "0 20px 100px 20px", display: "flex", flexDirection: "column", gap: "14px", marginTop: "-24px", position: "relative", zIndex: 2 }}>
+      {/* Content scroll area */}
+      <div className="full-screen-scroll safe-bottom">
+        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
 
-        {/* Loyalty Progress Card */}
-        <div style={{ padding: "18px", background: "var(--card-bg)", borderRadius: "var(--r-xl)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-md)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "10px", background: tierConf.gradient, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Award size={18} color="#fff" />
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: "0.88rem", fontWeight: 800, color: "var(--text-heading)" }}>{tier} Tier</p>
-              <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 500 }}>
-                {tier === "Diamond" ? "Maximum tier reached!" : `${tierConf.max - USER_RIDES} rides to ${tierConf.next}`}
-              </p>
-            </div>
-            <span style={{ fontSize: "0.75rem", fontWeight: 900, color: "var(--text-heading)" }}>{USER_RIDES}/{tierConf.max}</span>
-          </div>
-          <div style={{ width: "100%", height: 8, background: "var(--card-border)", borderRadius: "99px", overflow: "hidden" }}>
-            <div style={{
-              width: `${tierProgress}%`,
-              height: "100%",
-              background: tierConf.gradient,
-              borderRadius: "99px",
-              transition: "width 1s var(--ease)",
-              boxShadow: `0 0 8px ${tierConf.color}60`,
-            }} />
-          </div>
-          {tier !== "Diamond" && (
-            <p style={{ fontSize: "0.68rem", color: "var(--text-faint)", marginTop: "8px", fontWeight: 500 }}>
-              {tierConf.next} benefits: Priority matching, 5% fare discount, dedicated support
-            </p>
-          )}
-        </div>
-
-        {saved && (
-          <div className="animate-slide-up" style={{ padding: "12px 16px", background: "var(--success-subtle)", border: "1px solid var(--success-glow)", borderRadius: "var(--r-md)", color: "var(--success)", fontSize: "0.82rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
-            <Check size={15} /> Profile saved successfully!
-          </div>
-        )}
-
-        <SectionCard title="Personal Info">
-          <FieldInput label="Full Name" fieldKey="fullName" icon={<Edit3 size={10} />} placeholder="Enter your full name" />
-          <FieldInput label="Phone Number" fieldKey="phone" icon={<Phone size={10} />} placeholder="+234 800 000 0000" type="tel" />
-          <FieldInput label="Email Address" fieldKey="email" icon={<Mail size={10} />} placeholder="your@email.com" type="email" />
-        </SectionCard>
-
-        <SectionCard title="Saved Addresses">
-          <FieldInput label="Home Address" fieldKey="homeAddress" icon={<MapPin size={10} />} placeholder="Add your home address" />
-          <FieldInput label="Work Address" fieldKey="workAddress" icon={<Briefcase size={10} />} placeholder="Add your work address" />
-        </SectionCard>
-
-        <SectionCard
-          title={<><AlertTriangle size={10} style={{ color: "var(--danger)" }} /> Emergency Contact</>}
-          titleColor="var(--danger)"
-          borderColor="rgba(239,68,68,0.18)"
-          bg="rgba(239,68,68,0.03)"
-        >
-          <FieldInput label="Contact Name" fieldKey="emergencyName" icon={<Edit3 size={10} />} placeholder="Emergency contact name" />
-          <FieldInput label="Contact Phone" fieldKey="emergencyPhone" icon={<Phone size={10} />} placeholder="+234 800 000 0000" type="tel" />
-        </SectionCard>
-
-        {/* Quick Actions */}
-        <div style={{ borderRadius: "var(--r-lg)", border: "1px solid var(--card-border)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
-          {quickActions.map(({ label, icon: Icon, danger }, i) => (
-            <button
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "15px 18px",
-                border: "none",
-                borderBottom: i < quickActions.length - 1 ? "1px solid var(--card-border)" : "none",
-                background: "var(--bg-secondary)",
-                cursor: "pointer",
-                width: "100%",
-                textAlign: "left",
-                fontFamily: "var(--font)",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = danger ? "rgba(239,68,68,0.04)" : "var(--primary-subtle)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-secondary)"; }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: 34, height: 34, borderRadius: "9px", background: danger ? "rgba(239,68,68,0.08)" : "var(--primary-subtle)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon size={15} style={{ color: danger ? "var(--danger)" : "var(--primary)" }} />
-                </div>
-                <span style={{ fontSize: "0.88rem", fontWeight: 700, color: danger ? "var(--danger)" : "var(--text-heading)" }}>{label}</span>
+          {/* Loyalty Progress Card */}
+          <div className="glass-card" style={{ padding: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "10px", background: tierConf.gradient, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Award size={18} color="#fff" />
               </div>
-              <ChevronRight size={16} style={{ color: "var(--text-faint)" }} />
-            </button>
-          ))}
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: "0.88rem", fontWeight: 800, color: "var(--text-1)" }}>{tier} Club Rewards</p>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-3)", fontWeight: 500 }}>
+                  {tier === "Diamond" ? "Max tier" : `${tierConf.max - USER_RIDES} rides to ${tierConf.next}`}
+                </p>
+              </div>
+              <span style={{ fontSize: "0.75rem", fontWeight: 900, color: "var(--text-1)" }}>{USER_RIDES}/{tierConf.max}</span>
+            </div>
+            <div style={{ width: "100%", height: 6, background: "var(--border-strong)", borderRadius: "99px", overflow: "hidden" }}>
+              <div style={{
+                width: `${tierProgress}%`,
+                height: "100%",
+                background: tierConf.gradient,
+                borderRadius: "99px",
+                boxShadow: `0 0 8px ${tierConf.color}`,
+              }} />
+            </div>
+          </div>
+
+          {saved && (
+            <div className="animate-slide-up" style={{ padding: "12px 16px", background: "var(--green-dim)", border: "1px solid var(--green)", borderRadius: "var(--r-md)", color: "var(--green)", fontSize: "0.82rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Check size={15} /> Profile saved successfully!
+            </div>
+          )}
+
+          <SectionCard title="Personal Details">
+            <FieldInput label="Full Name" fieldKey="fullName" icon={<Edit3 size={10} />} placeholder="Enter your full name" />
+            <FieldInput label="Phone Number" fieldKey="phone" icon={<Phone size={10} />} placeholder="+234..." type="tel" />
+            <FieldInput label="Email Address" fieldKey="email" icon={<Mail size={10} />} placeholder="name@domain.com" type="email" />
+          </SectionCard>
+
+          <SectionCard title="Locations">
+            <FieldInput label="Home Address" fieldKey="homeAddress" icon={<MapPin size={10} />} placeholder="Saved home address" />
+            <FieldInput label="Work Address" fieldKey="workAddress" icon={<Briefcase size={10} />} placeholder="Saved work address" />
+          </SectionCard>
+
+          <SectionCard
+            title={<><AlertTriangle size={10} style={{ color: "var(--red)" }} /> Emergency contact</>}
+            titleColor="var(--red)"
+            borderColor="rgba(255,77,106,0.15)"
+            bg="rgba(255,77,106,0.03)"
+          >
+            <FieldInput label="Contact Name" fieldKey="emergencyName" icon={<Edit3 size={10} />} placeholder="Name" />
+            <FieldInput label="Contact Phone" fieldKey="emergencyPhone" icon={<Phone size={10} />} placeholder="Phone number" type="tel" />
+          </SectionCard>
+
+          {/* Quick Actions */}
+          <div style={{ borderRadius: "var(--r-lg)", border: "1px solid var(--border)", overflow: "hidden" }}>
+            {quickActions.map(({ label, icon: Icon, danger }, i) => (
+              <button
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  border: "none",
+                  borderBottom: i < quickActions.length - 1 ? "1px solid var(--border)" : "none",
+                  background: "var(--bg-surface)",
+                  cursor: "pointer",
+                  width: "100%",
+                  textAlign: "left",
+                  fontFamily: "var(--font)",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = danger ? "var(--red-dim)" : "var(--bg-elevated)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-surface)"; }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Icon size={14} style={{ color: danger ? "var(--red)" : "var(--text-3)" }} />
+                  <span style={{ fontSize: "0.86rem", fontWeight: 700, color: danger ? "var(--red)" : "var(--text-1)" }}>{label}</span>
+                </div>
+                <ChevronRight size={14} style={{ color: "var(--text-4)" }} />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
