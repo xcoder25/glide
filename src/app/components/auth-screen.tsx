@@ -129,18 +129,62 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
     return (
       <div className="full-screen animate-fade-in" style={{
         justifyContent: "flex-end",
-        padding: "40px 24px",
         position: "relative",
-        background: "linear-gradient(to bottom, rgba(4, 4, 9, 0.15) 0%, rgba(4, 4, 9, 0.5) 50%, rgba(4, 4, 9, 0.88) 100%), url('/ride.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        overflow: "hidden",
       }}>
-        {/* Bottom container */}
-        <div style={{ width: "100%", maxWidth: 440, zIndex: 10, display: "flex", flexDirection: "column", gap: "12px" }}>
+        {/* Local CSS Injection */}
+        <style>{`
+          @keyframes ken-burns {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.08) translate(-1%, -1%); }
+            100% { transform: scale(1) translate(0, 0); }
+          }
+          @keyframes panel-slide-up {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+        `}</style>
+
+        {/* Ken Burns Animated Background Layer */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "url('/ride.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          animation: "ken-burns 28s ease-in-out infinite",
+          zIndex: 1,
+        }} />
+
+        {/* Dark Ambient Overlay Layer */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(to bottom, rgba(4, 4, 9, 0.25) 0%, rgba(4, 4, 9, 0.6) 50%, rgba(4, 4, 9, 0.92) 100%)",
+          zIndex: 2,
+        }} />
+
+        {/* Bottom Frosted Glass Panel Container */}
+        <div style={{
+          width: "100%",
+          maxWidth: 460,
+          background: "rgba(10, 10, 20, 0.68)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "32px 32px 0 0",
+          padding: "36px 24px max(env(safe-area-inset-bottom, 0px), 36px) 24px",
+          boxShadow: "0 -12px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12)",
+          zIndex: 3,
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
+          animation: "panel-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both",
+          margin: "0 auto",
+        }}>
           
-          {/* Logo emblem */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+          {/* Header Branding */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
               width: 38, height: 38, borderRadius: "12px",
               background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
@@ -149,28 +193,70 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
             }}>
               <Zap size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontSize: "1.4rem", fontWeight: 950, color: "#ffffff", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
+            <span style={{ fontSize: "1.35rem", fontWeight: 950, color: "#ffffff", fontFamily: "var(--font-display)", letterSpacing: "-0.03em" }}>Glide</span>
+            <span style={{
+              marginLeft: "auto",
+              padding: "4px 12px",
+              background: "rgba(255, 82, 0, 0.15)",
+              border: "1px solid rgba(255, 82, 0, 0.3)",
+              borderRadius: "99px",
+              fontSize: "0.65rem",
+              fontWeight: 800,
+              color: "var(--primary)",
+              letterSpacing: "0.04em",
+            }}>
+              📍 UYO PREMIUM
+            </span>
           </div>
 
-          {/* Action buttons */}
-          <button onClick={() => go("signup")} className="btn btn-primary" style={{ padding: "16px", borderRadius: "var(--r-xl)" }}>
-            <span>Create Account</span> <ArrowRight size={16} />
-          </button>
-          
-          <button onClick={() => go("login")} className="btn" style={{
-            padding: "16px",
-            borderRadius: "var(--r-xl)",
-            background: "rgba(255, 255, 255, 0.08)",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
-            color: "#ffffff"
-          }}>
-            I already have an account
-          </button>
+          {/* Welcome Pitch */}
+          <div>
+            <h2 style={{
+              fontSize: "2.4rem",
+              fontWeight: 900,
+              lineHeight: 1.1,
+              color: "#ffffff",
+              fontFamily: "var(--font-display)",
+              letterSpacing: "-0.04em"
+            }}>
+              Fast rides, <br />
+              on <span style={{ background: "linear-gradient(90deg, var(--primary), var(--cyan))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>demand.</span>
+            </h2>
+            <p style={{
+              fontSize: "0.9rem",
+              color: "rgba(255, 255, 255, 0.7)",
+              marginTop: "12px",
+              lineHeight: 1.5,
+              fontWeight: 500
+            }}>
+              Experience safe, affordable, and comfortable rides anywhere in Uyo.
+            </p>
+          </div>
 
-          <p style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.5)", marginTop: "10px", textAlign: "center", lineHeight: 1.4 }}>
-            By getting started, you agree to our <br />
-            <span style={{ color: "var(--primary)", fontWeight: 700 }}>Terms of Service</span> &amp; <span style={{ color: "var(--primary)", fontWeight: 700 }}>Privacy Policy</span>
-          </p>
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <button onClick={() => go("signup")} className="btn btn-primary" style={{ padding: "16px", borderRadius: "var(--r-xl)", background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)", color: "#ffffff" }}>
+              <span>Create Account</span> <ArrowRight size={16} />
+            </button>
+            
+            <button onClick={() => go("login")} className="btn" style={{
+              padding: "16px",
+              borderRadius: "var(--r-xl)",
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: "0.95rem",
+              cursor: "pointer",
+            }}>
+              I already have an account
+            </button>
+
+            <p style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "12px", textAlign: "center", lineHeight: 1.4 }}>
+              By getting started, you agree to our <br />
+              <span style={{ color: "var(--primary)", fontWeight: 700 }}>Terms of Service</span> &amp; <span style={{ color: "var(--primary)", fontWeight: 700 }}>Privacy Policy</span>
+            </p>
+          </div>
         </div>
       </div>
     );
