@@ -129,7 +129,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
     return (
       <div className="full-screen animate-fade-in" style={{
         justifyContent: "flex-end",
-        position: "relative",
+        position: "absolute",
         overflow: "hidden",
       }}>
         {/* Local CSS Injection */}
