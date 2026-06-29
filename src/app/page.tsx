@@ -17,6 +17,12 @@ import { type LocationData } from "./components/booking-form";
 import { type RideCategory } from "./components/ride-selector";
 import RatingModal from "./components/rating-modal";
 import NotificationsPanel from "./components/notifications-panel";
+import DriverScreen from "./components/driver-screen";
+import ScheduleRideModal, { type ScheduledRide } from "./components/schedule-ride-modal";
+import CarpoolMatchModal from "./components/carpool-match-modal";
+import ReferralScreen from "./components/referral-screen";
+import OnboardingTour from "./components/onboarding-tour";
+import AdminDashboard from "./components/admin-dashboard";
 
 // Import Leaflet Map dynamically (SSR disabled)
 const GlideMap = dynamic(() => import("./components/map"), {
@@ -40,6 +46,15 @@ function getKmDistance(loc1: LocationData, loc2: LocationData) {
   return parseFloat((R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1));
 }
 
+// Generate a randomised surge multiplier for this session (1.0–1.8 in affected zones)
+function generateSurge(): number {
+  const r = Math.random();
+  if (r < 0.4) return 1.0;           // 40% — no surge
+  if (r < 0.65) return 1.2;          // 25% — mild
+  if (r < 0.85) return 1.4;          // 20% — moderate
+  return parseFloat((1.5 + Math.random() * 0.3).toFixed(1)); // 15% — high
+}
+
 const SEED_HISTORY: RideRecord[] = [
   { id: "r1", date: "Yesterday, 4:18 PM", pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", pickupData: { name: "Ibom Plaza", lat: 5.0253, lng: 7.9306, address: "Udo Udoma Ave, Uyo" }, dropoffData: { name: "Akwa Ibom Airport", lat: 4.8725, lng: 8.0925, address: "Airport Rd, Uyo" }, fare: 3800, distance: 8, category: "Glide Ride", driverName: "Marcus Sterling", rating: 5, status: "completed" },
   { id: "r2", date: "June 26, 9:04 AM", pickup: "Ibom Icon Hotel", dropoff: "University of Uyo (UNIUYO)", pickupData: { name: "Ibom Icon Hotel", lat: 5.0378, lng: 7.9142, address: "Nwaniba Rd, Uyo" }, dropoffData: { name: "University of Uyo (UNIUYO)", lat: 5.0153, lng: 7.9336, address: "UNIUYO Campus, Uyo" }, fare: 2500, distance: 12, category: "Glide Premium", driverName: "Chidi Obi", rating: 4, status: "completed" },
@@ -57,6 +72,18 @@ export default function Home() {
   const [pendingRating, setPendingRating] = useState<{ driverName: string; categoryName: string; fare: number; pickupName: string; dropoffName: string } | null>(null);
   const [showSplash, setShowSplash] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ── New Phase 2 State ──
+  const [isDriverMode, setIsDriverMode] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [scheduledRide, setScheduledRide] = useState<ScheduledRide | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [schedulePending, setSchedulePending] = useState<{ pickup: LocationData; dropoff: LocationData; category: RideCategory; price: number } | null>(null);
+  const [showCarpoolModal, setShowCarpoolModal] = useState(false);
+  const [carpoolPending, setCarpoolPending] = useState<{ pickup: LocationData; dropoff: LocationData; category: RideCategory; price: number } | null>(null);
+  const [surgeMultiplier] = useState<number>(generateSurge);
+  const [referralBalance] = useState(2000);
 
   // ── View State Machine ──
   const [currentView, setCurrentView] = useState<AppView>("home");
@@ -177,6 +204,11 @@ export default function Home() {
     setUserProfile(prev => ({ ...prev, fullName: name, phone, email }));
     setIsLoggedIn(true);
     setCurrentView("home");
+    // Show onboarding on first login
+    const alreadyOnboarded = typeof window !== "undefined" && localStorage.getItem("glide_onboarded");
+    if (!alreadyOnboarded) {
+      setTimeout(() => setShowOnboarding(true), 600);
+    }
   };
 
   const handleLogout = () => {
@@ -306,6 +338,16 @@ export default function Home() {
   if (showSplash) return <SplashScreen onComplete={() => setShowSplash(false)} />;
   if (!isLoggedIn) return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
 
+  // ── Driver Mode ──
+  if (isDriverMode) {
+    return <DriverScreen onExitDriverMode={() => setIsDriverMode(false)} />;
+  }
+
+  // ── Admin Dashboard ──
+  if (showAdmin) {
+    return <AdminDashboard onClose={() => setShowAdmin(false)} />;
+  }
+
   const showMap = currentView === "home" || currentView === "booking" || currentView === "ride";
 
   return (
@@ -313,7 +355,14 @@ export default function Home() {
 
       {/* ── Map Layer (always behind) ── */}
       <div className="map-layer">
-        <GlideMap pickup={pickup} dropoff={dropoff} status={rideStatus} deviceLocation={deviceLocation} />
+        <GlideMap
+          pickup={pickup}
+          dropoff={dropoff}
+          status={rideStatus}
+          deviceLocation={deviceLocation}
+          surgeMultiplier={surgeMultiplier}
+          showSurgeOverlay={currentView === "booking"}
+        />
       </div>
 
       {/* ── Screen Layer ── */}
@@ -347,7 +396,16 @@ export default function Home() {
             initialPickup={bookingInitialPickup}
             initialDropoff={bookingInitialDropoff}
             deviceLocation={deviceLocation}
+            surgeMultiplier={surgeMultiplier}
             onConfirmed={handleBookingConfirmed}
+            onScheduleRide={(p, d, cat, price) => {
+              setSchedulePending({ pickup: p, dropoff: d, category: cat, price });
+              setShowScheduleModal(true);
+            }}
+            onCarpoolRequest={(p, d, cat, price) => {
+              setCarpoolPending({ pickup: p, dropoff: d, category: cat, price });
+              setShowCarpoolModal(true);
+            }}
             onBack={() => setCurrentView("home")}
           />
         )}
@@ -399,6 +457,16 @@ export default function Home() {
             key="settings"
             settings={settings}
             onSettingsChange={setSettings}
+            onEnterDriverMode={() => setIsDriverMode(true)}
+            onOpenAdmin={() => setShowAdmin(true)}
+          />
+        )}
+
+        {/* REFERRAL */}
+        {currentView === "referral" && (
+          <ReferralScreen
+            key="referral"
+            referralBalance={referralBalance}
           />
         )}
       </div>
@@ -422,6 +490,53 @@ export default function Home() {
       {/* ── Notifications Panel ── */}
       {showNotifications && (
         <NotificationsPanel onClose={() => setShowNotifications(false)} />
+      )}
+
+      {/* ── Schedule Ride Modal ── */}
+      {showScheduleModal && schedulePending && (
+        <ScheduleRideModal
+          pickup={schedulePending.pickup}
+          dropoff={schedulePending.dropoff}
+          category={schedulePending.category}
+          price={schedulePending.price}
+          onConfirm={(ride) => {
+            setScheduledRide(ride);
+            setShowScheduleModal(false);
+            setCurrentView("home");
+          }}
+          onClose={() => setShowScheduleModal(false)}
+        />
+      )}
+
+      {/* ── Carpool Modal ── */}
+      {showCarpoolModal && carpoolPending && (
+        <CarpoolMatchModal
+          pickup={carpoolPending.pickup}
+          dropoff={carpoolPending.dropoff}
+          category={carpoolPending.category}
+          soloPrice={carpoolPending.price}
+          onAcceptPool={(splitPrice) => {
+            handleBookingConfirmed(carpoolPending.pickup, carpoolPending.dropoff, carpoolPending.category, splitPrice);
+            setShowCarpoolModal(false);
+          }}
+          onUpgradeSolo={() => {
+            handleBookingConfirmed(carpoolPending.pickup, carpoolPending.dropoff, carpoolPending.category, carpoolPending.price);
+            setShowCarpoolModal(false);
+          }}
+          onClose={() => setShowCarpoolModal(false)}
+        />
+      )}
+
+      {/* ── Onboarding Tour ── */}
+      {showOnboarding && (
+        <OnboardingTour
+          onComplete={() => {
+            setShowOnboarding(false);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("glide_onboarded", "1");
+            }
+          }}
+        />
       )}
     </div>
   );

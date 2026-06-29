@@ -9,12 +9,14 @@ interface MapProps {
   dropoff: LocationData | null;
   status: RideStatus;
   deviceLocation?: LocationData | null;
+  surgeMultiplier?: number;
+  showSurgeOverlay?: boolean;
 }
 
 const DEFAULT_MAP_KEY = "AIzaSyC9pjeW86GjRVxD61kagnVyopzLuRamdpA";
 const MAP_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || DEFAULT_MAP_KEY;
 
-export default function Map({ pickup, dropoff, status, deviceLocation = null }: MapProps) {
+export default function Map({ pickup, dropoff, status, deviceLocation = null, surgeMultiplier = 1, showSurgeOverlay = false }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
@@ -24,6 +26,8 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null }: 
   const dropoffMarkerRef = useRef<any>(null);
   const driverMarkerRef = useRef<any>(null);
   const polylineRef = useRef<any>(null);
+  const surgeCirclesRef = useRef<any[]>([]);
+
 
   // Load Google Maps Script dynamically to prevent build-time/SSR failures
   useEffect(() => {
@@ -257,6 +261,46 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null }: 
       driverMarkerRef.current.setMap(null);
     }
   }, [googleMapsLoaded, driverPos]);
+
+  // Update Surge Heatmap circles
+  useEffect(() => {
+    if (!googleMapsLoaded || !mapInstanceRef.current) return;
+
+    // Clear old circles
+    surgeCirclesRef.current.forEach(c => c.setMap(null));
+    surgeCirclesRef.current = [];
+
+    if (showSurgeOverlay && surgeMultiplier > 1) {
+      const googleMaps = (window as any).google.maps;
+      const map = mapInstanceRef.current;
+
+      const zones = [
+        { center: { lat: 5.0325, lng: 7.9255 }, radius: 600, color: "#FF5200", opacity: 0.15 }, // Ibom Plaza
+        { center: { lat: 5.0419, lng: 7.9238 }, radius: 800, color: "#F59E0B", opacity: 0.12 }, // UNIUYO
+        { center: { lat: 5.0277, lng: 7.9262 }, radius: 500, color: "#FF007A", opacity: 0.15 }, // City Mall
+      ];
+
+      zones.forEach(zone => {
+        const circle = new googleMaps.Circle({
+          strokeColor: zone.color,
+          strokeOpacity: 0.35,
+          strokeWeight: 1.5,
+          fillColor: zone.color,
+          fillOpacity: zone.opacity,
+          map,
+          center: zone.center,
+          radius: zone.radius,
+          clickable: false,
+        });
+        surgeCirclesRef.current.push(circle);
+      });
+    }
+
+    return () => {
+      surgeCirclesRef.current.forEach(c => c.setMap(null));
+      surgeCirclesRef.current = [];
+    };
+  }, [googleMapsLoaded, showSurgeOverlay, surgeMultiplier]);
 
   return (
     <div

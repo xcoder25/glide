@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Home, Clock, CreditCard, User, Settings, Zap } from "lucide-react";
+import { Home, Clock, CreditCard, Gift, Settings, Zap } from "lucide-react";
 
-export type AppView = "home" | "booking" | "ride" | "payment" | "history" | "profile" | "settings";
+export type AppView = "home" | "booking" | "ride" | "payment" | "history" | "profile" | "settings" | "referral";
 
 interface BottomNavProps {
   currentView: AppView;
@@ -11,11 +11,11 @@ interface BottomNavProps {
 }
 
 const NAV_TABS = [
-  { id: "home"    as AppView, icon: Home,       label: "Home"    },
-  { id: "history" as AppView, icon: Clock,      label: "Rides"   },
-  { id: "payment" as AppView, icon: CreditCard, label: "Wallet"  },
-  { id: "profile" as AppView, icon: User,       label: "Me"      },
-  { id: "settings" as AppView, icon: Settings,  label: "Settings"},
+  { id: "home"     as AppView, icon: Home,       label: "Home"    },
+  { id: "history"  as AppView, icon: Clock,      label: "Rides"   },
+  { id: "payment"  as AppView, icon: CreditCard, label: "Wallet"  },
+  { id: "referral" as AppView, icon: Gift,       label: "Refer"   },
+  { id: "settings" as AppView, icon: Settings,   label: "More"    },
 ];
 
 export default function BottomNav({ currentView, onNavigate }: BottomNavProps) {

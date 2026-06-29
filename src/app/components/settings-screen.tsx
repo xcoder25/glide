@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
   Moon, Sun, Bell, BellOff, Globe, Shield, HelpCircle, Info,
   ChevronRight, Check, Lock, Volume2, VolumeX, Wifi, MessageSquare, Key, Send, X,
+  Car, BarChart2,
 } from "lucide-react";
 
 export interface AppSettings {
@@ -18,6 +19,8 @@ interface SettingsScreenProps {
   settings: AppSettings;
   onSettingsChange: (settings: AppSettings) => void;
   appVersion?: string;
+  onEnterDriverMode?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 const LANGUAGES = ["English", "Yoruba", "Igbo", "Hausa", "Pidgin"];
@@ -30,7 +33,7 @@ const FAQ = [
   { q: "How do I report an issue?", a: "Use the Feedback button below or contact support@glide.ng. For urgent safety issues, use the SOS button during an active ride to alert our safety team immediately." },
 ];
 
-export default function SettingsScreen({ settings, onSettingsChange, appVersion = "2.4.1" }: SettingsScreenProps) {
+export default function SettingsScreen({ settings, onSettingsChange, appVersion = "2.4.1", onEnterDriverMode, onOpenAdmin }: SettingsScreenProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [langOpen, setLangOpen] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -42,6 +45,8 @@ export default function SettingsScreen({ settings, onSettingsChange, appVersion 
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [pinMsg, setPinMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [versionTaps, setVersionTaps] = useState(0);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
 
   const toggle = (key: keyof AppSettings) => {
     onSettingsChange({ ...settings, [key]: !settings[key] });
@@ -335,10 +340,48 @@ export default function SettingsScreen({ settings, onSettingsChange, appVersion 
             )}
           </Section>
 
-          {/* About */}
           <Section title="About">
-            <Row icon={<Info size={16} />} label="About Glide" right={<span style={{ fontSize: "0.78rem", color: "var(--text-3)", fontWeight: 700, background: "var(--border-strong)", padding: "3px 10px", borderRadius: "99px" }}>v{appVersion}</span>} />
+            <Row
+              icon={<Info size={16} />}
+              label="About Glide"
+              right={
+                <button
+                  onClick={() => {
+                    const next = versionTaps + 1;
+                    setVersionTaps(next);
+                    if (next >= 5) {
+                      setAdminUnlocked(true);
+                      setVersionTaps(0);
+                      onOpenAdmin?.();
+                    }
+                  }}
+                  style={{ fontSize: "0.78rem", fontWeight: 700, background: adminUnlocked ? "var(--primary-dim)" : "var(--border-strong)", padding: "3px 10px", borderRadius: "99px", border: adminUnlocked ? "1px solid var(--primary-glow)" : "none", cursor: "pointer", fontFamily: "var(--font)", color: adminUnlocked ? "var(--primary)" : "var(--text-3)" }}
+                >
+                  {adminUnlocked ? "🔓 Admin" : `v${appVersion}`}
+                </button>
+              }
+            />
             <Row icon={<Info size={16} />} label="Rate the App" subtitle="Give us 5 stars on store ⭐" right={<ChevronRight size={15} style={{ color: "var(--text-4)" }} />} onClick={() => {}} />
+          </Section>
+
+          {/* Developer / Demo Mode */}
+          <Section title="Demo Modes">
+            <Row
+              icon={<Car size={16} />}
+              label="Switch to Driver Mode"
+              subtitle="Simulate the driver experience"
+              right={<ChevronRight size={15} style={{ color: "var(--text-4)" }} />}
+              onClick={onEnterDriverMode}
+            />
+            {adminUnlocked && (
+              <Row
+                icon={<BarChart2 size={16} />}
+                label="Open Admin Dashboard"
+                subtitle="Operator view · Demo data"
+                right={<ChevronRight size={15} style={{ color: "var(--text-4)" }} />}
+                onClick={onOpenAdmin}
+              />
+            )}
           </Section>
         </div>
       </div>

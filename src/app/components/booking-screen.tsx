@@ -11,7 +11,10 @@ interface BookingScreenProps {
   initialPickup?: LocationData;
   initialDropoff?: LocationData;
   deviceLocation?: LocationData | null;
+  surgeMultiplier?: number;
   onConfirmed: (pickup: LocationData, dropoff: LocationData, category: RideCategory, price: number) => void;
+  onScheduleRide?: (pickup: LocationData, dropoff: LocationData, category: RideCategory, price: number) => void;
+  onCarpoolRequest?: (pickup: LocationData, dropoff: LocationData, category: RideCategory, price: number) => void;
   onBack: () => void;
 }
 
@@ -142,7 +145,10 @@ export default function BookingScreen({
   initialPickup,
   initialDropoff,
   deviceLocation = null,
+  surgeMultiplier = 1,
   onConfirmed,
+  onScheduleRide,
+  onCarpoolRequest,
   onBack,
 }: BookingScreenProps) {
   const [step, setStep] = useState<BookingStep>(
@@ -387,7 +393,18 @@ export default function BookingScreen({
               )}
               <RideSelector
                 distanceMiles={distance}
+                surgeMultiplier={surgeMultiplier}
                 onBookRide={(cat, price) => { setSelectedCategory(cat); setSelectedPrice(price); setStep("confirm"); }}
+                onSchedule={(cat, price) => {
+                  if (pickup && dropoff) {
+                    onScheduleRide?.(pickup, dropoff, cat, price);
+                  }
+                }}
+                onCarpoolSelect={(cat, price) => {
+                  if (pickup && dropoff) {
+                    onCarpoolRequest?.(pickup, dropoff, cat, price);
+                  }
+                }}
               />
               <button onClick={() => setStep("dropoff")} className="btn btn-secondary" style={{ borderRadius: "var(--r-xl)", fontSize: "0.86rem" }}>
                 <ArrowLeft size={15} /> Change Destination

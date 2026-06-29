@@ -1102,3 +1102,53 @@ body {
     padding-bottom: 0;
   }
 }
+
+/* ─── PWA / Safe Area Insets ─── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px) !important;
+  }
+  .bottom-nav-container {
+    bottom: max(env(safe-area-inset-bottom, 0px), 16px) !important;
+  }
+}
+
+/* ─── Small Mobile Breakpoints (≤ 390px) ─── */
+@media (max-width: 390px) {
+  .page-title {
+    font-size: 1rem !important;
+  }
+  .page-header {
+    padding: 12px 16px !important;
+  }
+  .glass-card {
+    padding: 14px !important;
+  }
+  .btn {
+    padding: 12px 16px !important;
+    font-size: 0.85rem !important;
+  }
+  .modal-sheet {
+    padding: 16px 16px !important;
+  }
+  .bottom-sheet {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* ─── Driver Mode Colors ─── */
+:root {
+  --driver-green: #00c896;
+  --driver-green-dim: rgba(0, 200, 150, 0.1);
+  --driver-green-glow: rgba(0, 200, 150, 0.35);
+}
+
+/* ─── Fade In Animation ─── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s var(--ease) both;
+}
