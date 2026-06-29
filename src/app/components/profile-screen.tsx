@@ -12,6 +12,7 @@ export interface UserProfile {
   emergencyName: string;
   emergencyPhone: string;
   avatarColor: string;
+  avatarUrl?: string;
 }
 
 interface ProfileScreenProps {
@@ -49,6 +50,7 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
   const [draft, setDraft] = useState<UserProfile>({ ...profile });
   const [saved, setSaved] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 
   const tier = getTier(USER_RIDES);
   const tierConf = TIER_CONFIG[tier as keyof typeof TIER_CONFIG];
@@ -184,7 +186,7 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "24px" }}>
           <div style={{ position: "relative" }}>
             <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={() => setShowAvatarMenu(!showAvatarMenu)}
               style={{
                 width: 72, height: 72,
                 borderRadius: "50%",
@@ -195,13 +197,19 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
                 boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
                 cursor: "pointer",
                 fontFamily: "var(--font-display)",
+                overflow: "hidden",
+                padding: 0,
               }}
-              title="Change color"
+              title="Change avatar"
             >
-              {draft.fullName?.charAt(0)?.toUpperCase() || "?"}
+              {draft.avatarUrl ? (
+                <img src={draft.avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                draft.fullName?.charAt(0)?.toUpperCase() || "?"
+              )}
             </button>
             <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
+              onClick={() => setShowAvatarMenu(!showAvatarMenu)}
               style={{
                 position: "absolute", bottom: 0, right: 0,
                 width: 24, height: 24,
@@ -212,9 +220,94 @@ export default function ProfileScreen({ profile, onSave }: ProfileScreenProps) {
                 cursor: "pointer",
                 boxShadow: "var(--shadow-sm)",
               }}
+              title="Avatar options"
             >
               <Camera size={11} style={{ color: "var(--primary)" }} />
             </button>
+
+            {/* Hidden File Input */}
+            <input
+              id="avatar-upload-input"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const base64 = event.target?.result as string;
+                    setDraft(d => ({ ...d, avatarUrl: base64 }));
+                    onSave({ ...profile, avatarUrl: base64 });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+
+            {/* Avatar Dropdown Menu */}
+            {showAvatarMenu && (
+              <div
+                className="animate-slide-up"
+                style={{
+                  position: "absolute", top: 80, left: 0,
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-strong)",
+                  borderRadius: "var(--r-md)",
+                  padding: "6px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  boxShadow: "var(--shadow-xl)",
+                  zIndex: 30,
+                  width: 150,
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setShowAvatarMenu(false);
+                    const fileInput = document.getElementById("avatar-upload-input");
+                    fileInput?.click();
+                  }}
+                  style={{ padding: "8px 10px", background: "none", border: "none", borderRadius: "var(--r-xs)", textAlign: "left", fontSize: "0.78rem", fontWeight: 700, color: "var(--text-1)", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                >
+                  📷 Upload Photo
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAvatarMenu(false);
+                    setShowColorPicker(true);
+                  }}
+                  style={{ padding: "8px 10px", background: "none", border: "none", borderRadius: "var(--r-xs)", textAlign: "left", fontSize: "0.78rem", fontWeight: 700, color: "var(--text-1)", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                >
+                  🎨 Change Color
+                </button>
+                {draft.avatarUrl && (
+                  <button
+                    onClick={() => {
+                      setShowAvatarMenu(false);
+                      setDraft(d => {
+                        const updated = { ...d };
+                        delete updated.avatarUrl;
+                        return updated;
+                      });
+                      const updatedProfile = { ...profile };
+                      delete updatedProfile.avatarUrl;
+                      onSave(updatedProfile);
+                    }}
+                    style={{ padding: "8px 10px", background: "none", border: "none", borderRadius: "var(--r-xs)", textAlign: "left", fontSize: "0.78rem", fontWeight: 700, color: "var(--red)", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "var(--red-dim)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                  >
+                    🗑️ Remove Photo
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Color Picker Popover */}
             {showColorPicker && (

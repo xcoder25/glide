@@ -347,27 +347,8 @@ export default function Home() {
       }
     });
 
-    // Auto-accept ride simulation fallback if no driver accepts within 4.5 seconds
-    const acceptTimer = setTimeout(() => {
-      const rideRefCurrent = ref(db, `rides/${currentRideId}`);
-      onValue(rideRefCurrent, (snapshot) => {
-        const val = snapshot.val();
-        if (val && val.status === "searching") {
-          update(ref(db, `rides/${currentRideId}`), {
-            status: "arriving",
-            driverName: "Marcus Sterling",
-            driverPlate: "GLIDE-001",
-            driverPhone: "+234 802 345 6789",
-            driverLat: val.pickup.lat + 0.004,
-            driverLng: val.pickup.lng + 0.004,
-          });
-        }
-      }, { onlyOnce: true });
-    }, 4500);
-
     return () => {
       off(rideRef, "value", listener);
-      clearTimeout(acceptTimer);
     };
   }, [currentRideId, pickup, dropoff, distance, rideStatus]);
 
@@ -399,7 +380,28 @@ export default function Home() {
   // ─── HANDLERS ───
 
   const handleLoginSuccess = (name: string, phone: string, email: string) => {
-    setUserProfile(prev => ({ ...prev, fullName: name, phone, email }));
+    const userKey = name.replace(/\./g, '_');
+    const userRef = ref(db, `users/${userKey}`);
+    onValue(userRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        setUserProfile(val);
+      } else {
+        const initialProfile = {
+          fullName: name,
+          phone,
+          email,
+          homeAddress: "",
+          workAddress: "",
+          emergencyName: "",
+          emergencyPhone: "",
+          avatarColor: "#D95F00",
+        };
+        set(userRef, initialProfile);
+        setUserProfile(initialProfile);
+      }
+    }, { onlyOnce: true });
+
     setIsLoggedIn(true);
     setCurrentView("home");
     // Show onboarding on first login
@@ -608,6 +610,7 @@ export default function Home() {
             onShowProfile={() => setCurrentView("profile")}
             userInitial={userProfile.fullName.charAt(0).toUpperCase()}
             avatarColor={userProfile.avatarColor}
+            avatarUrl={userProfile.avatarUrl}
             isBooked={isBooked}
             rideStatus={rideStatus}
             selectedCategoryName={selectedCategory?.name}
@@ -674,7 +677,11 @@ export default function Home() {
           <ProfileScreen
             key="profile"
             profile={userProfile}
-            onSave={setUserProfile}
+            onSave={(updatedProfile) => {
+              setUserProfile(updatedProfile);
+              const userKey = updatedProfile.fullName.replace(/\./g, '_');
+              set(ref(db, `users/${userKey}`), updatedProfile);
+            }}
           />
         )}
 

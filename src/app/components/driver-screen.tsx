@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Navigation2, Power, Star, DollarSign, Clock, TrendingUp,
   MapPin, Phone, MessageSquare, X, CheckCircle, ChevronRight,
-  Zap, AlertTriangle, Shield,
+  Zap, AlertTriangle, Shield, Send
 } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { ref, onValue, off, update } from "firebase/database";
+import { ref, onValue, off, update, push, set } from "firebase/database";
 
 interface IncomingRide {
   id: string;
@@ -42,6 +42,48 @@ export default function DriverScreen({ onExitDriverMode }: DriverScreenProps) {
   const [todayEarnings, setTodayEarnings] = useState(10700);
   const [tripCount, setTripCount] = useState(4);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // Real-time Chat States
+  const [showChat, setShowChat] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState<any[]>([]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync chat messages in real time for driver
+  useEffect(() => {
+    if (!activeRide) {
+      setMessages([]);
+      return;
+    }
+
+    const messagesRef = ref(db, `rides/${activeRide.id}/messages`);
+    const listener = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data).sort((a: any, b: any) => a.timestamp - b.timestamp);
+        setMessages(list as any);
+      }
+    });
+
+    return () => off(messagesRef, "value", listener);
+  }, [activeRide]);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, showChat]);
+
+  const sendDriverMessage = () => {
+    if (!chatInput.trim() || !activeRide) return;
+    const messagesRef = ref(db, `rides/${activeRide.id}/messages`);
+    const newMsgRef = push(messagesRef);
+    set(newMsgRef, {
+      from: "driver",
+      text: chatInput.trim(),
+      timestamp: Date.now(),
+    });
+    setChatInput("");
+  };
 
   // Listen for real-time ride requests from Firebase when online
   useEffect(() => {
@@ -305,8 +347,16 @@ export default function DriverScreen({ onExitDriverMode }: DriverScreenProps) {
               </div>
 
               <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-                {[{ icon: <Phone size={14} />, label: "Call" }, { icon: <MessageSquare size={14} />, label: "Chat" }, { icon: <MapPin size={14} />, label: "Navigate" }].map(a => (
-                  <button key={a.label} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "10px 6px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", cursor: "pointer", fontFamily: "var(--font)", color: "var(--text-2)", fontSize: "0.68rem", fontWeight: 700, transition: "all 0.2s" }}>
+                {[
+                  { icon: <Phone size={14} />, label: "Call", action: () => {} },
+                  { icon: <MessageSquare size={14} />, label: "Chat", action: () => setShowChat(true) },
+                  { icon: <MapPin size={14} />, label: "Navigate", action: () => {} }
+                ].map(a => (
+                  <button
+                    key={a.label}
+                    onClick={a.action}
+                    style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "10px 6px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", cursor: "pointer", fontFamily: "var(--font)", color: "var(--text-2)", fontSize: "0.68rem", fontWeight: 700, transition: "all 0.2s" }}
+                  >
                     {a.icon}
                     {a.label}
                   </button>
@@ -458,6 +508,58 @@ export default function DriverScreen({ onExitDriverMode }: DriverScreenProps) {
                 <button onClick={() => setShowExitConfirm(false)} className="btn btn-secondary" style={{ flex: 1 }}>Stay</button>
                 <button onClick={onExitDriverMode} className="btn btn-primary" style={{ flex: 1 }}>Exit</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ REALTIME CHAT OVERLAY ═══ */}
+      {showChat && activeRide && (
+        <div className="modal-overlay" onClick={() => setShowChat(false)}>
+          <div className="modal-sheet animate-modal-pop" onClick={e => e.stopPropagation()} style={{ maxHeight: "72vh", display: "flex", flexDirection: "column" }}>
+            <div className="sheet-handle" />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0 16px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, var(--cyan), #0099cc)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: "0.9rem" }}>
+                  {activeRide.riderName.charAt(0)}
+                </div>
+                <div>
+                  <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "var(--text-1)" }}>{activeRide.riderName}</div>
+                  <div style={{ fontSize: "0.68rem", color: "#00c896", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00c896", boxShadow: "0 0 5px #00c896" }} />
+                    Active Trip Chat
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setShowChat(false)} style={{ width: 36, height: 36, borderRadius: "50%", border: "1px solid var(--border-med)", background: "var(--bg-elevated)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-2)" }}>
+                <X size={15} />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px", minHeight: 0, paddingBottom: "12px" }}>
+              {messages.length === 0 ? (
+                <div style={{ textAlign: "center", color: "var(--text-3)", fontSize: "0.8rem", padding: "20px 0" }}>No messages yet. Send a message to start.</div>
+              ) : (
+                messages.map((msg, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: msg.from === "driver" ? "flex-end" : "flex-start" }}>
+                    <div className={`chat-bubble ${msg.from === "driver" ? "mine" : "theirs"}`}>{msg.text}</div>
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <div style={{ display: "flex", gap: "8px", paddingTop: "8px" }}>
+              <input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && sendDriverMessage()}
+                placeholder="Message rider..."
+                style={{ flex: 1, padding: "12px 14px", border: "1.5px solid var(--border)", borderRadius: "var(--r-xl)", fontSize: "0.88rem", fontFamily: "var(--font)", color: "var(--text-1)", background: "var(--bg-elevated)", outline: "none", fontWeight: 500 }}
+                onFocus={e => { e.currentTarget.style.borderColor = "#00c896"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "var(--border)"; }}
+              />
+              <button onClick={sendDriverMessage} className="btn btn-primary" style={{ width: 46, padding: "0", borderRadius: "var(--r-full)", flexShrink: 0, background: "linear-gradient(135deg, #00c896, #00a070)" }}>
+                <Send size={16} />
+              </button>
             </div>
           </div>
         </div>

@@ -56,8 +56,8 @@ function RouteProgressWidget({
     }
     const interval = setInterval(() => {
       setArrivingProgress(p => {
-        if (p >= 100) return 0; // loop
-        return p + 2;
+        if (p >= 100) return 0;
+        return p + 1.5;
       });
     }, 150);
     return () => clearInterval(interval);
@@ -65,98 +65,162 @@ function RouteProgressWidget({
 
   let carX = 40;
   let carY = 60;
-  let activeSegment: 1 | 2 | null = null;
   let t = 0;
+  let angle = 0;
 
   if (status === "searching") {
     carX = 40;
     carY = 60;
+    angle = 0;
   } else if (status === "arriving") {
-    activeSegment = 1;
     t = arrivingProgress / 100;
     carX = (1 - t) ** 2 * 40 + 2 * (1 - t) * t * 100 + t ** 2 * 160;
     carY = (1 - t) ** 2 * 60 + 2 * (1 - t) * t * 20 + t ** 2 * 60;
+    
+    // Tangent derivative for Q1 curve: dx = 120, dy = 160t - 80
+    const dx = 120;
+    const dy = 160 * t - 80;
+    angle = Math.atan2(dy, dx) * (180 / Math.PI);
   } else if (status === "arrived") {
     carX = 160;
     carY = 60;
+    angle = 0;
   } else if (status === "inprogress") {
-    activeSegment = 2;
     t = progress / 100;
     carX = (1 - t) ** 2 * 160 + 2 * (1 - t) * t * 220 + t ** 2 * 280;
     carY = (1 - t) ** 2 * 60 + 2 * (1 - t) * t * 100 + t ** 2 * 60;
+    
+    // Tangent derivative for Q2 curve: dx = 120, dy = 80 - 160t
+    const dx = 120;
+    const dy = 80 - 160 * t;
+    angle = Math.atan2(dy, dx) * (180 / Math.PI);
   } else if (status === "completed") {
     carX = 280;
     carY = 60;
+    angle = 0;
   }
 
+  // Telemetry indicators
+  const currentSpeed = status === "arriving" ? 42 : status === "inprogress" ? 48 : 0;
+  const currentDistance = 
+    status === "searching" ? "Calculating..." :
+    status === "arriving" ? `${(1.4 * (1 - t) + 0.1).toFixed(1)} km` :
+    status === "arrived" ? "Arrived" :
+    status === "inprogress" ? `${(4.8 * (1 - t) + 0.1).toFixed(1)} km` :
+    "0.0 km";
+
   return (
-    <div className="glass-card" style={{ padding: "18px", display: "flex", flexDirection: "column", gap: "16px", background: "linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)", position: "relative", overflow: "hidden" }}>
+    <div className="glass-card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "18px", background: "linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)", border: "1.5px solid var(--border-strong)", position: "relative", overflow: "hidden" }}>
+      {/* Background Pulse Glows */}
       {status === "searching" && (
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-          <div style={{ position: "absolute", left: "40px", top: "60px", width: "100px", height: "100px", transform: "translate(-50%, -50%)", border: "2px solid var(--primary)", borderRadius: "50%", animation: "pulse-ring 2s infinite" }} />
-          <div style={{ position: "absolute", left: "40px", top: "60px", width: "200px", height: "200px", transform: "translate(-50%, -50%)", border: "1px solid var(--primary-glow)", borderRadius: "50%", animation: "pulse-ring 2s infinite", animationDelay: "0.6s" }} />
+          <div style={{ position: "absolute", left: "40px", top: "60px", width: "90px", height: "90px", transform: "translate(-50%, -50%)", border: "2px solid var(--cyan-glow)", borderRadius: "50%", animation: "pulse-ring 2s infinite" }} />
         </div>
       )}
 
+      {/* SVG Neon Road Tracker */}
       <svg viewBox="0 0 320 120" style={{ width: "100%", height: "auto" }}>
         <defs>
-          <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+          <filter id="road-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <linearGradient id="arrivingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="var(--cyan-glow)" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="var(--cyan)" />
+          </linearGradient>
+          <linearGradient id="inprogressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="var(--cyan)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--primary)" />
+          </linearGradient>
+          <linearGradient id="carGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="var(--primary)" />
+            <stop offset="100%" stopColor="#ffa000" />
+          </linearGradient>
         </defs>
 
+        {/* ── Asphalt Underlay Road ── */}
+        <path d="M 40 60 Q 100 20, 160 60" fill="none" stroke="var(--border-strong)" strokeWidth="12" strokeLinecap="round" />
+        <path d="M 160 60 Q 220 100, 280 60" fill="none" stroke="var(--border-strong)" strokeWidth="12" strokeLinecap="round" />
+
+        {/* ── Inner Asphalt Lane ── */}
+        <path d="M 40 60 Q 100 20, 160 60" fill="none" stroke="#101828" strokeWidth="8" strokeLinecap="round" opacity="0.85" />
+        <path d="M 160 60 Q 220 100, 280 60" fill="none" stroke="#101828" strokeWidth="8" strokeLinecap="round" opacity="0.85" />
+
+        {/* ── Center Highway Divider Dashes ── */}
+        <path d="M 40 60 Q 100 20, 160 60" fill="none" stroke="#ffffff" strokeWidth="0.8" strokeDasharray="3,5" opacity="0.4" />
+        <path d="M 160 60 Q 220 100, 280 60" fill="none" stroke="#ffffff" strokeWidth="0.8" strokeDasharray="3,5" opacity="0.4" />
+
+        {/* ── Glowing Active Route Progress ── */}
         <path
           d="M 40 60 Q 100 20, 160 60"
           fill="none"
-          stroke="var(--cyan)"
-          strokeWidth="3.5"
-          strokeDasharray={status === "arriving" ? "5,5" : "none"}
-          opacity={status === "searching" || status === "arriving" ? 0.8 : 0.3}
-          style={{
-            animation: status === "arriving" ? "dash 1.5s linear infinite" : "none",
-          }}
+          stroke="url(#arrivingGradient)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray="135"
+          strokeDashoffset={status === "searching" ? 135 : status === "arriving" ? 135 * (1 - t) : 0}
+          filter="url(#road-glow)"
         />
-
         <path
           d="M 160 60 Q 220 100, 280 60"
           fill="none"
-          stroke="var(--primary)"
-          strokeWidth="4.5"
-          strokeDasharray={status === "inprogress" ? "6,6" : "none"}
-          opacity={status === "inprogress" ? 0.9 : 0.3}
-          style={{
-            animation: status === "inprogress" ? "dash 1.5s linear infinite" : "none",
-          }}
+          stroke="url(#inprogressGradient)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray="135"
+          strokeDashoffset={status === "inprogress" ? 135 * (1 - t) : status === "completed" ? 0 : 135}
+          filter="url(#road-glow)"
         />
 
-        <circle cx="40" cy="60" r="5" fill="var(--text-3)" />
+        {/* ── Landmark Pins (A, Mid, B) ── */}
+        {/* Pin A: Pickup */}
+        <circle cx="40" cy="60" r="9" fill="rgba(0,180,255,0.15)" stroke="var(--cyan)" strokeWidth="1.5" />
+        <circle cx="40" cy="60" r="4" fill="var(--cyan)" />
 
-        <circle cx="160" cy="60" r="12" fill={status === "arrived" || status === "inprogress" ? "var(--cyan-dim)" : "transparent"} stroke="var(--cyan)" strokeWidth="1.5" />
-        <circle cx="160" cy="60" r="5" fill="var(--cyan)" filter="url(#glow-cyan)" />
+        {/* Pin Mid: Meetup point */}
+        <circle cx="160" cy="60" r="9" fill={status === "arrived" || status === "inprogress" ? "rgba(0,200,150,0.15)" : "transparent"} stroke={status === "arrived" || status === "inprogress" ? "#00c896" : "var(--border-strong)"} strokeWidth="1.5" />
+        <circle cx="160" cy="60" r="4" fill={status === "arrived" || status === "inprogress" ? "#00c896" : "var(--text-4)"} />
 
-        <circle cx="280" cy="60" r="14" fill={status === "completed" ? "var(--green-dim)" : "transparent"} stroke={status === "completed" ? "var(--green)" : "var(--primary)"} strokeWidth="1.5" />
-        <circle cx="280" cy="60" r="5" fill={status === "completed" ? "var(--green)" : "var(--primary)"} filter={status === "completed" ? "none" : "url(#glow-orange)"} />
+        {/* Pin B: Destination */}
+        <circle cx="280" cy="60" r="9" fill={status === "completed" ? "rgba(0,217,126,0.15)" : "rgba(255,82,0,0.12)"} stroke={status === "completed" ? "var(--green)" : "var(--primary)"} strokeWidth="1.5" />
+        <circle cx="280" cy="60" r="4" fill={status === "completed" ? "var(--green)" : "var(--primary)"} />
 
-        <g transform={`translate(${carX}, ${carY})`} style={{ transition: status === "arriving" ? "none" : "transform 0.3s ease-out" }}>
-          <circle cx="0" cy="0" r="13" fill="var(--bg-elevated)" stroke={activeSegment === 1 ? "var(--cyan)" : "var(--primary)"} strokeWidth="2.5" filter={activeSegment === 1 ? "url(#glow-cyan)" : "url(#glow-orange)"} style={{ transformOrigin: "center", animation: status === "completed" ? "none" : "pulse-scale 1.8s infinite ease-in-out" }} />
-          <text x="0" y="4" textAnchor="middle" style={{ fontSize: "11px", pointerEvents: "none" }}>
-            {status === "completed" ? "✅" : "🚗"}
-          </text>
-        </g>
+        {/* ── Tangent-Guided Glowing Sports Car Marker ── */}
+        {status !== "searching" && (
+          <g transform={`translate(${carX}, ${carY}) rotate(${angle})`} style={{ transition: status === "arriving" ? "none" : "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)" }}>
+            <g transform="scale(0.85)">
+              {/* Tail Lights */}
+              <rect x="-13" y="-7" width="2" height="3" rx="1" fill="#f44336" />
+              <rect x="-13" y="4" width="2" height="3" rx="1" fill="#f44336" />
+              {/* Wheels */}
+              <rect x="-9" y="-9" width="4" height="2" rx="1" fill="#0f172a" />
+              <rect x="5" y="-9" width="4" height="2" rx="1" fill="#0f172a" />
+              <rect x="-9" y="7" width="4" height="2" rx="1" fill="#0f172a" />
+              <rect x="5" y="7" width="4" height="2" rx="1" fill="#0f172a" />
+              {/* Chassis shadow */}
+              <path d="M-12,-7 L12,-7 L14,-3 L14,3 L12,7 L-12,7 Z" fill="rgba(0,0,0,0.35)" transform="translate(1, 1)" />
+              {/* Chassis Main */}
+              <path d="M-12,-7 L12,-7 L14,-3 L14,3 L12,7 L-12,7 Z" fill="url(#carGradient)" />
+              {/* Windshield */}
+              <path d="M3,-5 L8,-4 L8,4 L3,5 Z" fill="#090d16" opacity="0.9" />
+              {/* Windows */}
+              <path d="M-4,-6 L2,-5 L2,-4 L-4,-4 Z" fill="#090d16" opacity="0.85" />
+              <path d="M-4,6 L2,5 L2,4 L-4,4 Z" fill="#090d16" opacity="0.85" />
+              <path d="M-8,-4 L-5,-4 L-5,4 L-8,4 Z" fill="#090d16" opacity="0.85" />
+              {/* Headlights */}
+              <path d="M12,-6 L14,-5 L14,-3 L12,-3 Z" fill="#ffeb3b" />
+              <path d="M12,3 L14,3 L14,5 L12,5 Z" fill="#ffeb3b" />
+            </g>
+          </g>
+        )}
       </svg>
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+      {/* Route Info Row */}
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", padding: "0 2px" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)" }} />
@@ -174,20 +238,58 @@ function RouteProgressWidget({
         </div>
       </div>
 
+      {/* Live Telemetry Grid */}
       <div style={{
-        marginTop: "4px",
-        padding: "10px 12px",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        gap: "8px",
+        background: "var(--bg-elevated)",
+        borderRadius: "var(--r-md)",
+        padding: "12px",
+        border: "1px solid var(--border)",
+        textAlign: "center"
+      }}>
+        <div>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-3)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>ETA</div>
+          <div style={{ fontSize: "0.84rem", fontWeight: 800, color: "var(--text-1)", marginTop: "3px" }}>
+            {status === "searching" ? "Searching" : etaDisplay ? etaDisplay.split(" ")[0] : "Arrived"}
+          </div>
+        </div>
+        <div style={{ borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-3)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Distance</div>
+          <div style={{ fontSize: "0.84rem", fontWeight: 800, color: "var(--text-1)", marginTop: "3px" }}>{currentDistance}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-3)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Speed</div>
+          <div style={{ fontSize: "0.84rem", fontWeight: 800, color: "#00c896", marginTop: "3px" }}>
+            {currentSpeed > 0 ? `${currentSpeed} km/h` : "Stopped"}
+          </div>
+        </div>
+      </div>
+
+      {/* Status Bar */}
+      <div style={{
+        padding: "11px 14px",
         background: "var(--bg-surface)",
         borderRadius: "var(--r-md)",
-        border: "1px solid var(--border)",
+        border: "1.5px solid var(--border)",
         textAlign: "center",
         fontSize: "0.78rem",
-        fontWeight: 600,
+        fontWeight: 700,
         color: status === "completed" ? "var(--green)" : status === "arrived" ? "var(--cyan)" : "var(--text-2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px"
       }}>
-        {status === "searching" && "Matching you with the nearest drivers..."}
+        {status === "searching" && (
+          <>
+            <span className="spinner-loader" style={{ width: 12, height: 12, border: "2px solid var(--primary-glow)", borderTopColor: "var(--primary)", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />
+            Matching you with nearest drivers...
+          </>
+        )}
         {status === "arriving" && `Driver is arriving at pickup location ${etaDisplay ? `(${etaDisplay})` : ""}`}
-        {status === "arrived" && "Marcus is waiting for you at the pickup location!"}
+        {status === "arrived" && "Driver is waiting at your pickup point!"}
         {status === "inprogress" && `En route to your destination ${etaDisplay ? `· ETA: ${etaDisplay}` : ""}`}
         {status === "completed" && "You have safely arrived at your destination!"}
       </div>
@@ -213,7 +315,6 @@ export default function ActiveRide({
   const [eta, setEta] = useState(3);
   const [seconds, setSeconds] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [showDemoControls, setShowDemoControls] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -243,6 +344,7 @@ export default function ActiveRide({
     return () => off(messagesRef, "value", listener);
   }, [currentRideId]);
 
+  // ETA ticker representation (visual display only, status changes are fully driver-controlled via database)
   useEffect(() => {
     if (status === "searching" || status === "completed") return;
     const tick = setInterval(() => {
@@ -254,22 +356,32 @@ export default function ActiveRide({
     return () => clearInterval(tick);
   }, [status]);
 
+  // Trip progress representation (updates progress bar without auto-completing the ride)
   useEffect(() => {
-    let t: NodeJS.Timeout;
-    if (status === "arriving")   { setEta(3); setProgress(0); setSeconds(0); t = setTimeout(() => onStatusChange("arrived"), 10000); }
-    if (status === "arrived")    { setEta(0); setProgress(0); setSeconds(0); t = setTimeout(() => onStatusChange("inprogress"), 5000); }
-    if (status === "inprogress") {
-      setEta(8); setProgress(0); setSeconds(0);
-      const i = setInterval(() => setProgress(p => p >= 100 ? 100 : p + 6.66), 1000);
+    if (status === "searching") {
+      setProgress(0);
+      setEta(0);
+      setSeconds(0);
+    } else if (status === "arriving") {
+      setProgress(0);
+      setEta(3);
+      setSeconds(0);
+    } else if (status === "arrived") {
+      setProgress(0);
+      setEta(0);
+      setSeconds(0);
+    } else if (status === "inprogress") {
+      setEta(8);
+      setSeconds(0);
+      // Increment progress bar up to 95% en route; final 100% completion is written by driver screen
+      const i = setInterval(() => setProgress(p => Math.min(95, p + 2)), 2000);
       return () => clearInterval(i);
+    } else if (status === "completed") {
+      setProgress(100);
+      setEta(0);
+      setSeconds(0);
     }
-    if (status === "completed")  { setProgress(100); setEta(0); setSeconds(0); }
-    return () => clearTimeout(t);
-  }, [status, onStatusChange]);
-
-  useEffect(() => {
-    if (status === "inprogress" && progress >= 100) onStatusChange("completed");
-  }, [progress, status, onStatusChange]);
+  }, [status]);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -287,24 +399,8 @@ export default function ActiveRide({
         text,
         timestamp: Date.now(),
       });
-
-      // Simulation auto-reply from mock driver in database
-      // Only triggered if driverName === Marcus Sterling (simulation driver)
-      setTimeout(() => {
-        const responses = ["Got it, be there shortly!", "On my way 👍", "I can see you on the map.", "2 minutes away!"];
-        const replyRef = push(messagesRef);
-        set(replyRef, {
-          from: "driver",
-          text: responses[Math.floor(Math.random() * responses.length)],
-          timestamp: Date.now(),
-        });
-      }, 1800);
     } else {
       setMessages(prev => [...prev, { from: "user", text }]);
-      setTimeout(() => {
-        const r = ["Got it, be there shortly!", "On my way 👍", "I can see you on the map.", "2 minutes away!"];
-        setMessages(prev => [...prev, { from: "driver", text: r[Math.floor(Math.random() * r.length)] }]);
-      }, 1500);
     }
   };
 
@@ -428,30 +524,12 @@ export default function ActiveRide({
 
           {/* SOS Row */}
           {status !== "completed" && status !== "searching" && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--red-dim)", borderRadius: "var(--r-lg)", marginBottom: "12px", border: "1px solid rgba(255,77,106,0.15)" }}>
-              <span style={{ fontSize: "0.76rem", color: "var(--text-2)", fontWeight: 500 }}>Emergency? Alert contacts instantly</span>
-              <button className="sos-btn">SOS</button>
-            </div>
-          )}
-
-          {/* Demo Controls */}
-          <button
-            onClick={() => setShowDemoControls(!showDemoControls)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", background: "var(--primary-dim)", border: "1px solid var(--primary-glow)", borderRadius: "var(--r-md)", fontSize: "0.72rem", color: "var(--primary)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", width: "100%", justifyContent: "center", marginBottom: "12px", transition: "all 0.2s" }}
-          >
-            <Sliders size={12} /> Demo Controls {showDemoControls ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          {showDemoControls && (
-            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px", animation: "slide-up 0.2s var(--ease)" }}>
-              {(["arriving","arrived","inprogress","completed"] as RideStatus[]).map(s => (
-                <button
-                  key={s}
-                  onClick={() => onStatusChange(s)}
-                  style={{ padding: "8px 14px", borderRadius: "var(--r-md)", border: `1.5px solid ${status === s ? "var(--primary)" : "var(--border-med)"}`, background: status === s ? "var(--primary-dim)" : "transparent", color: status === s ? "var(--primary)" : "var(--text-2)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", textTransform: "capitalize", transition: "all 0.2s" }}
-                >
-                  {s === "inprogress" ? "In Trip" : s}
-                </button>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "rgba(255, 77, 106, 0.08)", borderRadius: "var(--r-lg)", marginBottom: "12px", border: "1.5px solid rgba(255, 77, 106, 0.18)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--red)", boxShadow: "0 0 8px var(--red)", display: "inline-block" }} />
+                <span style={{ fontSize: "0.78rem", color: "var(--text-1)", fontWeight: 600 }}>Emergency Safety Link</span>
+              </div>
+              <button className="sos-btn" style={{ padding: "6px 14px", fontSize: "0.72rem", fontWeight: 800, background: "var(--red)", color: "#fff", border: "none", borderRadius: "var(--r-sm)", cursor: "pointer", boxShadow: "0 4px 12px rgba(255,77,106,0.3)" }}>SOS Alert</button>
             </div>
           )}
 

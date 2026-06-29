@@ -9,6 +9,8 @@ interface TopNavProps {
   userName: string;
   onNavigate: (view: AppView) => void;
   onLogout: () => void;
+  avatarUrl?: string;
+  avatarColor?: string;
 }
 
 const NAV_ITEMS = [
@@ -19,7 +21,9 @@ const NAV_ITEMS = [
   { id: "settings" as AppView, icon: Settings,   label: "Settings" },
 ];
 
-export default function TopNav({ currentView, userName, onNavigate, onLogout }: TopNavProps) {
+export default function TopNav({ currentView, userName, onNavigate, onLogout, avatarUrl, avatarColor }: TopNavProps) {
+  const avatarBg = avatarColor || "linear-gradient(135deg, var(--primary) 0%, #F59E0B 100%)";
+
   return (
     <aside
       style={{
@@ -119,7 +123,7 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
           width: 40,
           height: 40,
           borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--primary) 0%, #F59E0B 100%)",
+          background: avatarBg,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -131,11 +135,16 @@ export default function TopNav({ currentView, userName, onNavigate, onLogout }: 
           boxShadow: "var(--shadow-primary)",
           border: "2px solid var(--bg-secondary)",
           transition: "transform 0.2s var(--ease)",
+          overflow: "hidden",
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "scale(1.08)"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "scale(1)"; }}
       >
-        {userName.charAt(0).toUpperCase()}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          userName.charAt(0).toUpperCase()
+        )}
       </div>
 
       {/* Logout */}

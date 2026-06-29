@@ -16,6 +16,7 @@ interface HomeScreenProps {
   onShowProfile: () => void;
   userInitial: string;
   avatarColor?: string;
+  avatarUrl?: string;
   isBooked?: boolean;
   rideStatus?: RideStatus;
   selectedCategoryName?: string;
@@ -44,6 +45,7 @@ export default function HomeScreen({
   onShowProfile,
   userInitial,
   avatarColor = "#FF6B1A",
+  avatarUrl,
   isBooked,
   rideStatus,
   selectedCategoryName,
@@ -89,74 +91,134 @@ export default function HomeScreen({
   const firstName = userName.split(" ")[0] || "Rider";
 
   return (
-    <div className="map-screen">
+    <div className="map-screen" style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}>
+      {/* Dynamic Keyframe Animations */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .animate-top-bar {
+          animation: slide-down-spring 0.65s var(--ease-spring) both;
+        }
+        .animate-bottom-sheet {
+          animation: sheet-up-spring 0.7s var(--ease-spring) both;
+        }
+        .text-gradient-flow {
+          background: linear-gradient(135deg, var(--primary) 0%, #ffaa00 50%, var(--primary) 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: gradient-shimmer 3s linear infinite;
+        }
+        .glass-btn-hover {
+          transition: all 0.25s var(--ease) !important;
+        }
+        .glass-btn-hover:hover {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: rgba(255, 82, 0, 0.35) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 12px rgba(255,82,0,0.1) !important;
+        }
+        .popular-badge-hover {
+          transition: all 0.22s var(--ease) !important;
+        }
+        .popular-badge-hover:hover {
+          background: linear-gradient(135deg, rgba(255,82,0,0.15), rgba(255,82,0,0.05)) !important;
+          border-color: rgba(255, 82, 0, 0.45) !important;
+          transform: scale(1.04) translateY(-1px);
+        }
+        @keyframes slide-down-spring {
+          from { transform: translateY(-70px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes sheet-up-spring {
+          from { transform: translateY(120px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes gradient-shimmer {
+          to { background-position: 200% center; }
+        }
+        .bottom-sheet-glass {
+          background: rgba(10, 14, 24, 0.78) !important;
+          backdrop-filter: blur(28px) saturate(210%) !important;
+          -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+        }
+      `}} />
 
       {/* ── Floating Top Bar ── */}
-      <div className="top-bar">
+      <div className="top-bar animate-top-bar" style={{ zIndex: 101 }}>
         <div style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "10px 16px",
-          background: "var(--bg-glass)",
-          backdropFilter: "blur(32px)",
-          WebkitBackdropFilter: "blur(32px)",
+          padding: "12px 18px",
+          background: "rgba(10, 14, 24, 0.75)",
+          backdropFilter: "blur(24px) saturate(180%)",
+          WebkitBackdropFilter: "blur(24px) saturate(180%)",
           borderRadius: "var(--r-xl)",
-          border: "1px solid var(--border-med)",
-          boxShadow: "var(--shadow-lg)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}>
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
-              width: 36, height: 36, borderRadius: "12px",
+              width: 38, height: 38, borderRadius: "12px",
               background: "linear-gradient(135deg, var(--primary) 0%, #e05a12 100%)",
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: "var(--shadow-primary)",
             }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
             <div>
-              <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em", lineHeight: 1 }}>Glide</div>
-              <div style={{ fontSize: "0.56rem", color: "var(--text-3)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>UYO · AKWA IBOM</div>
+              <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em", lineHeight: 1 }}>Glide</div>
+              <div style={{ fontSize: "0.56rem", color: "var(--text-3)", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", marginTop: "1px" }}>UYO · AKWA IBOM</div>
             </div>
           </div>
 
           {/* Right Controls */}
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <button
               onClick={onShowNotifications}
               style={{
-                width: 38, height: 38, borderRadius: "50%",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-med)",
+                width: 40, height: 40, borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.03)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", color: "var(--text-2)",
                 transition: "all 0.2s",
                 position: "relative",
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
             >
               <Bell size={16} />
-              <div style={{ position: "absolute", top: 6, right: 6, width: 7, height: 7, borderRadius: "50%", background: "var(--primary)", border: "1.5px solid var(--bg-surface)" }} />
+              <div style={{ position: "absolute", top: 8, right: 8, width: 6, height: 6, borderRadius: "50%", background: "var(--primary)", border: "1.5px solid rgba(10,14,24,1)" }} />
             </button>
             <button
               onClick={onShowProfile}
               style={{
-                width: 38, height: 38, borderRadius: "50%",
+                width: 40, height: 40, borderRadius: "50%",
                 background: avatarColor,
-                border: "2px solid rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.18)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer",
-                fontSize: "0.9rem", fontWeight: 800, color: "#fff",
+                fontSize: "0.95rem", fontWeight: 900, color: "#fff",
                 fontFamily: "var(--font)",
-                boxShadow: `0 0 0 1px ${avatarColor}40, var(--shadow-md)`,
+                boxShadow: `0 0 0 1px ${avatarColor}30, 0 8px 24px rgba(0,0,0,0.3)`,
                 transition: "transform 0.2s var(--ease-spring)",
+                overflow: "hidden",
+                padding: 0,
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              {userInitial}
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                userInitial
+              )}
             </button>
           </div>
         </div>
@@ -167,10 +229,10 @@ export default function HomeScreen({
         <div
           style={{
             position: "absolute",
-            top: 90,
+            top: 96,
             left: 20, right: 20,
-            zIndex: 20,
-            animation: "slide-up 0.4s var(--ease) both",
+            zIndex: 100,
+            animation: "slide-down-spring 0.5s var(--ease-spring) both",
           }}
         >
           <button
@@ -179,16 +241,16 @@ export default function HomeScreen({
               width: "100%",
               display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "14px 18px",
-              background: "linear-gradient(135deg, var(--primary) 0%, #e05a12 100%)",
+              background: "linear-gradient(135deg, var(--primary) 0%, #ff5200 100%)",
               borderRadius: "var(--r-xl)",
               border: "none",
               cursor: "pointer",
-              boxShadow: "var(--shadow-primary)",
+              boxShadow: "0 12px 36px rgba(255,82,0,0.4)",
               fontFamily: "var(--font)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Car size={18} style={{ color: "#fff", animation: "finding-pulse 1.5s infinite" }} />
               </div>
               <div style={{ textAlign: "left" }}>
@@ -198,12 +260,12 @@ export default function HomeScreen({
                   {rideStatus === "arrived" && "Driver has arrived! 📍"}
                   {rideStatus === "inprogress" && "On your way 🚀"}
                 </div>
-                <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.75)", marginTop: "2px", fontWeight: 600 }}>
-                  {selectedCategoryName || "Glide"} · Marcus Sterling
+                <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.8)", marginTop: "2.5px", fontWeight: 600 }}>
+                  {selectedCategoryName || "Glide"} · Live Connection
                 </div>
               </div>
             </div>
-            <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#fff", background: "rgba(255,255,255,0.2)", padding: "6px 12px", borderRadius: "99px" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "#fff", background: "rgba(255,255,255,0.22)", padding: "6px 12px", borderRadius: "99px" }}>
               Track →
             </div>
           </button>
@@ -211,34 +273,34 @@ export default function HomeScreen({
       )}
 
       {/* ── Glass Bottom Sheet ── */}
-      <div className="bottom-sheet" style={{ maxHeight: "62vh" }}>
-        <div className="sheet-handle" />
+      <div className="bottom-sheet bottom-sheet-glass animate-bottom-sheet" style={{ maxHeight: "64vh", paddingBottom: "env(safe-area-inset-bottom, 12px)" }}>
+        <div className="sheet-handle" style={{ background: "rgba(255,255,255,0.15)" }} />
 
         <div style={{ padding: "16px 20px 0 20px" }}>
           {/* Greeting */}
-          <div style={{ marginBottom: "16px" }}>
-            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{greeting}</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.02em", marginTop: "2px" }}>
-              {greeting}, <span style={{ background: "var(--primary-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{firstName}</span> 👋
+          <div style={{ marginBottom: "18px" }}>
+            <div style={{ fontSize: "0.65rem", fontWeight: 800, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{greeting}</div>
+            <div style={{ fontSize: "1.6rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", letterSpacing: "-0.03em", marginTop: "2px", lineHeight: 1.25 }}>
+              {greeting}, <span className="text-gradient-flow">{firstName}</span> 👋
             </div>
-            <div style={{ fontSize: "0.8rem", color: "var(--text-3)", marginTop: "3px", fontWeight: 500 }}>Where are you headed?</div>
+            <div style={{ fontSize: "0.82rem", color: "var(--text-3)", marginTop: "4px", fontWeight: 600 }}>Where are you headed?</div>
           </div>
 
           {/* Search Bar */}
-          <div style={{ position: "relative", marginBottom: "16px" }}>
-            <Search size={17} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} />
+          <div style={{ position: "relative", marginBottom: "18px" }}>
+            <Search size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} />
             <input
               ref={inputRef}
               value={searchText}
               onChange={e => handleSearchChange(e.target.value)}
               onFocus={() => searchText && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              placeholder="Search destination..."
+              placeholder="Search destination in Uyo..."
               style={{
                 width: "100%",
-                padding: "14px 42px 14px 44px",
-                background: "var(--bg-elevated)",
-                border: "1.5px solid var(--border)",
+                padding: "15px 44px 15px 48px",
+                background: "rgba(255, 255, 255, 0.03)",
+                border: "1.5px solid rgba(255, 255, 255, 0.07)",
                 borderRadius: "var(--r-xl)",
                 color: "var(--text-1)",
                 fontFamily: "var(--font)",
@@ -246,23 +308,26 @@ export default function HomeScreen({
                 outline: "none",
                 transition: "all 0.22s var(--ease)",
                 fontWeight: 500,
+                boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)",
               }}
               onFocusCapture={e => {
                 e.currentTarget.style.borderColor = "var(--primary)";
-                e.currentTarget.style.boxShadow = "0 0 0 3px var(--primary-ring)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,82,0,0.12), inset 0 1px 3px rgba(0,0,0,0.15)";
               }}
               onBlurCapture={e => {
-                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.07)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
             {searchText ? (
-              <button onClick={() => { setSearchText(""); setSuggestions([]); setShowSuggestions(false); }} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-3)", padding: 4 }}>
-                <X size={15} />
+              <button onClick={() => { setSearchText(""); setSuggestions([]); setShowSuggestions(false); }} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--text-3)", padding: 4 }}>
+                <X size={16} />
               </button>
             ) : (
-              <button style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--primary)", padding: 4 }}>
-                <Mic size={15} />
+              <button style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--primary)", padding: 4 }}>
+                <Mic size={16} />
               </button>
             )}
 
@@ -270,35 +335,36 @@ export default function HomeScreen({
             {showSuggestions && suggestions.length > 0 && (
               <div style={{
                 position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border-med)",
+                background: "rgba(10, 14, 24, 0.95)",
+                backdropFilter: "blur(24px)",
+                border: "1px solid rgba(255, 255, 255, 0.09)",
                 borderRadius: "var(--r-lg)",
-                boxShadow: "var(--shadow-xl)",
-                zIndex: 50,
+                boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+                zIndex: 150,
                 overflow: "hidden",
-                animation: "slide-up 0.2s var(--ease) both",
+                animation: "slide-down-spring 0.25s var(--ease) both",
               }}>
                 {suggestions.map((s, i) => (
                   <button
                     key={i}
                     onMouseDown={() => handleSuggestionSelect(s)}
                     style={{
-                      width: "100%", padding: "13px 16px",
-                      display: "flex", alignItems: "center", gap: "12px",
-                      border: "none", borderBottom: i < suggestions.length - 1 ? "1px solid var(--border)" : "none",
+                      width: "100%", padding: "14px 18px",
+                      display: "flex", alignItems: "center", gap: "14px",
+                      border: "none", borderBottom: i < suggestions.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
                       background: "transparent", cursor: "pointer",
                       fontFamily: "var(--font)", textAlign: "left",
-                      transition: "background 0.15s",
+                      transition: "all 0.15s",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    <div style={{ width: 32, height: 32, borderRadius: "9px", background: "var(--primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <MapPin size={14} style={{ color: "var(--primary)" }} />
+                    <div style={{ width: 34, height: 34, borderRadius: "10px", background: "rgba(255,82,0,0.12)", border: "1px solid rgba(255,82,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <MapPin size={15} style={{ color: "var(--primary)" }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-1)" }}>{s.name}</div>
-                      <div style={{ fontSize: "0.72rem", color: "var(--text-3)", fontWeight: 500 }}>{s.address}</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 750, color: "var(--text-1)" }}>{s.name}</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-3)", fontWeight: 550, marginTop: "2px" }}>{s.address}</div>
                     </div>
                   </button>
                 ))}
@@ -307,7 +373,7 @@ export default function HomeScreen({
           </div>
 
           {/* Saved Shortcuts */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
             {[
               { label: "Home", icon: <Home size={15} style={{ color: "var(--primary)" }} />, loc: favoriteHome, fallback: { name: "Home", lat: 5.0253, lng: 7.9306, address: "Set your home address" } },
               { label: "Work", icon: <Briefcase size={15} style={{ color: "var(--cyan)" }} />, loc: favoriteWork, fallback: { name: "Work", lat: 5.0480, lng: 7.9520, address: "Set your work address" } },
@@ -315,25 +381,29 @@ export default function HomeScreen({
               <button
                 key={item.label}
                 onClick={() => handleQuickBook(item.loc || item.fallback)}
-                className="glass-card glass-card-hover"
+                className="glass-card glass-btn-hover"
                 style={{
                   display: "flex", alignItems: "center", gap: "12px",
                   padding: "14px 16px",
                   cursor: "pointer", fontFamily: "var(--font)",
                   border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.02)",
+                  borderRadius: "var(--r-xl)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                 }}
               >
                 <div style={{
                   width: 36, height: 36, borderRadius: "50%",
-                  background: "var(--bg-elevated)",
+                  background: item.label === "Home" ? "rgba(255,82,0,0.1)" : "rgba(0,180,255,0.1)",
+                  border: item.label === "Home" ? "1px solid rgba(255,82,0,0.2)" : "1px solid rgba(0,180,255,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: "inset 0 1px 3px rgba(255,255,255,0.05)"
+                  boxShadow: "inset 0 1px 3px rgba(255,255,255,0.03)"
                 }}>
                   {item.icon}
                 </div>
                 <div style={{ textAlign: "left", minWidth: 0 }}>
-                  <div style={{ fontSize: "0.86rem", fontWeight: 850, color: "var(--text-1)" }}>{item.label}</div>
-                  <div style={{ fontSize: "0.68rem", color: "var(--text-3)", fontWeight: 600, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 800, color: "var(--text-1)" }}>{item.label}</div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-3)", fontWeight: 600, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", marginTop: "2px" }}>
                     {item.loc ? "Saved" : "Add address"}
                   </div>
                 </div>
@@ -342,34 +412,33 @@ export default function HomeScreen({
           </div>
 
           {/* Popular Places */}
-          <div style={{ marginBottom: "8px" }}>
-            <div className="section-label" style={{ marginBottom: "12px" }}>
-              <Zap size={10} style={{ color: "var(--primary)" }} />
+          <div style={{ marginBottom: "10px" }}>
+            <div className="section-label" style={{ marginBottom: "12px", fontSize: "0.7rem", fontWeight: 800 }}>
+              <Zap size={11} style={{ color: "var(--primary)" }} />
               Popular in Uyo
             </div>
-            <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+            <div style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "6px" }}>
               {POPULAR.map((loc, i) => (
                 <button
                   key={i}
                   onClick={() => handleQuickBook(loc)}
+                  className="popular-badge-hover"
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
-                    padding: "10px 14px",
-                    background: "var(--bg-elevated)",
-                    border: "1px solid var(--border)",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
+                    padding: "12px 16px",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.05)",
                     borderRadius: "var(--r-lg)",
                     cursor: "pointer", fontFamily: "var(--font)",
                     flexShrink: 0,
-                    minWidth: 80,
-                    transition: "all 0.2s var(--ease)",
+                    minWidth: 84,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "var(--primary-dim)"; e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "var(--bg-elevated)"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = ""; }}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--primary-dim)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <MapPin size={16} style={{ color: "var(--primary)" }} />
+                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,82,0,0.1)", border: "1px solid rgba(255,82,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <MapPin size={15} style={{ color: "var(--primary)" }} />
                   </div>
-                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-2)", whiteSpace: "nowrap" }}>{loc.name}</span>
+                  <span style={{ fontSize: "0.74rem", fontWeight: 750, color: "var(--text-2)", whiteSpace: "nowrap" }}>{loc.name}</span>
                 </button>
               ))}
             </div>
@@ -377,35 +446,35 @@ export default function HomeScreen({
 
           {/* Recent Trips */}
           {recentDestinations.length > 0 && (
-            <div style={{ marginTop: "16px", paddingBottom: "16px" }}>
-              <div className="section-label" style={{ marginBottom: "12px" }}>
-                <Clock size={10} style={{ color: "var(--text-3)" }} />
-                Recent
+            <div style={{ marginTop: "18px", paddingBottom: "12px" }}>
+              <div className="section-label" style={{ marginBottom: "12px", fontSize: "0.7rem", fontWeight: 800 }}>
+                <Clock size={11} style={{ color: "var(--text-3)" }} />
+                Recent Places
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {recentDestinations.slice(0, 3).map((loc, i) => (
                   <button
                     key={i}
                     onClick={() => handleQuickBook(loc)}
                     style={{
-                      display: "flex", alignItems: "center", gap: "12px",
+                      display: "flex", alignItems: "center", gap: "14px",
                       padding: "12px 14px",
                       background: "transparent",
                       border: "none", borderRadius: "var(--r-md)",
                       cursor: "pointer", fontFamily: "var(--font)", textAlign: "left",
-                      transition: "background 0.15s",
+                      transition: "all 0.15s",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    <div style={{ width: 36, height: 36, borderRadius: "10px", background: "var(--bg-elevated)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Clock size={15} style={{ color: "var(--text-3)" }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc.name}</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-3)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc.address}</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 750, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc.name}</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-3)", fontWeight: 550, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }}>{loc.address}</div>
                     </div>
-                    <ChevronRight size={15} style={{ color: "var(--text-4)", flexShrink: 0 }} />
+                    <ChevronRight size={16} style={{ color: "var(--text-4)", flexShrink: 0 }} />
                   </button>
                 ))}
               </div>
@@ -413,11 +482,24 @@ export default function HomeScreen({
           )}
 
           {/* Book CTA */}
-          <div style={{ padding: "8px 0 20px 0" }}>
+          <div style={{ padding: "12px 0 20px 0" }}>
             <button
               onClick={() => onStartBooking()}
               className="btn btn-primary"
-              style={{ borderRadius: "var(--r-xl)", fontSize: "1rem", fontWeight: 800 }}
+              style={{
+                borderRadius: "var(--r-xl)",
+                fontSize: "1.05rem",
+                fontWeight: 900,
+                background: "linear-gradient(135deg, var(--primary) 0%, #ff5200 100%)",
+                boxShadow: "0 8px 30px rgba(255,82,0,0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                padding: "16px",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 36px rgba(255,82,0,0.45)"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 8px 30px rgba(255,82,0,0.35)"; }}
             >
               <Navigation size={18} />
               Book a Ride

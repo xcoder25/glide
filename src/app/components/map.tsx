@@ -25,6 +25,7 @@ export default function Map({
   const mapRef = useRef<HTMLDivElement>(null);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
+  const [heading, setHeading] = useState(0);
 
   const mapInstanceRef = useRef<any>(null);
   const pickupMarkerRef = useRef<any>(null);
@@ -94,62 +95,61 @@ export default function Map({
     });
   }, [googleMapsLoaded, deviceLocation]);
 
-  // Driver movement simulation
-  useEffect(() => {
-    if (driverLat !== undefined && driverLng !== undefined && driverLat !== null && driverLng !== null) {
-      setDriverPos([driverLat, driverLng]);
-      return;
-    }
+  // Function to calculate bearing between two coordinates
+  const calculateBearing = (startLat: number, startLng: number, endLat: number, endLng: number) => {
+    const lat1 = (startLat * Math.PI) / 180;
+    const lat2 = (endLat * Math.PI) / 180;
+    const dLng = ((endLng - startLng) * Math.PI) / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    const brng = Math.atan2(y, x);
+    return ((brng * 180) / Math.PI + 360) % 360;
+  };
 
-    if (!pickup || !dropoff) {
+  // Smooth marker interpolation and bearing updates from Firebase streamed coordinates
+  useEffect(() => {
+    if (driverLat === undefined || driverLng === undefined || driverLat === null || driverLng === null) {
       setDriverPos(null);
       return;
     }
 
-    let interval: NodeJS.Timeout;
-    let progress = 0;
+    const startPos = driverPos || [driverLat, driverLng];
+    const endPos: [number, number] = [driverLat, driverLng];
 
-    if (status === "arriving") {
-      const startLat = pickup.lat + 0.004;
-      const startLng = pickup.lng + 0.004;
-      setDriverPos([startLat, startLng]);
-
-      interval = setInterval(() => {
-        progress += 2;
-        if (progress >= 100) {
-          setDriverPos([pickup.lat, pickup.lng]);
-          clearInterval(interval);
-        } else {
-          const lat = startLat + (pickup.lat - startLat) * (progress / 100);
-          const lng = startLng + (pickup.lng - startLng) * (progress / 100);
-          setDriverPos([lat, lng]);
-        }
-      }, 200);
-
-    } else if (status === "arrived") {
-      setDriverPos([pickup.lat, pickup.lng]);
-
-    } else if (status === "inprogress") {
-      interval = setInterval(() => {
-        progress += 1;
-        if (progress >= 100) {
-          setDriverPos([dropoff.lat, dropoff.lng]);
-          clearInterval(interval);
-        } else {
-          const lat = pickup.lat + (dropoff.lat - pickup.lat) * (progress / 100);
-          const lng = pickup.lng + (dropoff.lng - pickup.lng) * (progress / 100);
-          setDriverPos([lat, lng]);
-        }
-      }, 150);
-
-    } else if (status === "completed") {
-      setDriverPos([dropoff.lat, dropoff.lng]);
+    if (startPos[0] === endPos[0] && startPos[1] === endPos[1]) {
+      return;
     }
 
-    return () => {
-      if (interval) clearInterval(interval);
+    // Calculate heading/bearing
+    const newHeading = calculateBearing(startPos[0], startPos[1], endPos[0], endPos[1]);
+    setHeading(newHeading);
+
+    // Smooth transition over 1200ms
+    let startTime: number | null = null;
+    const duration = 1200;
+    let animId: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // cubic bezier-like easeInOutQuad easing
+      const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+      const currentLat = startPos[0] + (endPos[0] - startPos[0]) * ease;
+      const currentLng = startPos[1] + (endPos[1] - startPos[1]) * ease;
+
+      setDriverPos([currentLat, currentLng]);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animate);
+      }
     };
-  }, [pickup, dropoff, status, driverLat, driverLng]);
+
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [driverLat, driverLng]);
 
   // Update markers, polyline and bounds
   useEffect(() => {
@@ -230,6 +230,9 @@ export default function Map({
       const bounds = new googleMaps.LatLngBounds();
       bounds.extend({ lat: pickup.lat, lng: pickup.lng });
       bounds.extend({ lat: dropoff.lat, lng: dropoff.lng });
+      if (driverPos) {
+        bounds.extend({ lat: driverPos[0], lng: driverPos[1] });
+      }
       map.fitBounds(bounds, { top: 80, bottom: 280, left: 60, right: 60 });
     } else if (pickup) {
       map.setCenter({ lat: pickup.lat, lng: pickup.lng });
@@ -241,9 +244,9 @@ export default function Map({
       map.setCenter({ lat: deviceLocation.lat, lng: deviceLocation.lng });
       map.setZoom(13);
     }
-  }, [googleMapsLoaded, pickup, dropoff, deviceLocation]);
+  }, [googleMapsLoaded, pickup, dropoff, deviceLocation, driverPos]);
 
-  // Update Driver position Marker
+  // Update Driver position Marker with real-time steering rotation
   useEffect(() => {
     if (!googleMapsLoaded || !mapInstanceRef.current) return;
 
@@ -257,20 +260,33 @@ export default function Map({
           position,
           map,
           icon: {
-            url: "data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'><circle cx='18' cy='18' r='12' fill='%23ffffff' stroke='%23D95F00' stroke-width='2.5'/><polygon points='18,11 14,23 18,20 22,23' fill='%23D95F00'/></svg>",
-            scaledSize: new googleMaps.Size(36, 36),
-            anchor: new googleMaps.Point(18, 18),
+            path: "M0-12L10,8L3,5L0,8L-3,5L-10,8Z",
+            scale: 2.2,
+            fillColor: "#D95F00",
+            fillOpacity: 1.0,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+            rotation: heading,
           },
-          title: "Marcus Sterling (Toyota Corolla)",
+          title: "Driver Location (Toyota Corolla)",
         });
       } else {
         driverMarkerRef.current.setPosition(position);
+        driverMarkerRef.current.setIcon({
+          path: "M0-12L10,8L3,5L0,8L-3,5L-10,8Z",
+          scale: 2.2,
+          fillColor: "#D95F00",
+          fillOpacity: 1.0,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+          rotation: heading,
+        });
         driverMarkerRef.current.setMap(map);
       }
     } else if (driverMarkerRef.current) {
       driverMarkerRef.current.setMap(null);
     }
-  }, [googleMapsLoaded, driverPos]);
+  }, [googleMapsLoaded, driverPos, heading]);
 
   // Update Surge Heatmap circles
   useEffect(() => {

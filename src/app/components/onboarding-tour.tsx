@@ -60,11 +60,11 @@ interface OnboardingTourProps {
 }
 
 const TOOLTIP_POSITIONS: Record<string, React.CSSProperties> = {
-  map:    { top: "18%", left: "50%", transform: "translateX(-50%)" },
-  search: { top: "38%", left: "50%", transform: "translateX(-50%)" },
-  book:   { bottom: "28%", left: "50%", transform: "translateX(-50%)" },
-  nav:    { bottom: "18%", left: "50%", transform: "translateX(-50%)" },
-  wallet: { bottom: "22%", left: "50%", transform: "translateX(-50%)" },
+  map:    { top: "18%", left: "16px", right: "16px", margin: "0 auto" },
+  search: { top: "38%", left: "16px", right: "16px", margin: "0 auto" },
+  book:   { bottom: "28%", left: "16px", right: "16px", margin: "0 auto" },
+  nav:    { bottom: "18%", left: "16px", right: "16px", margin: "0 auto" },
+  wallet: { bottom: "22%", left: "16px", right: "16px", margin: "0 auto" },
 };
 
 export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
@@ -91,10 +91,10 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [advance, onComplete]);
 
-  const tooltipStyle = TOOLTIP_POSITIONS[current.highlight] || { top: "50%", left: "50%", transform: "translate(-50%,-50%)" };
+  const tooltipStyle = TOOLTIP_POSITIONS[current.highlight] || { top: "30%", left: "16px", right: "16px", margin: "0 auto" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "auto" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 9999, pointerEvents: "auto" }}>
       {/* Dark overlay */}
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(2px)" }} />
 
