@@ -21,6 +21,8 @@ interface SettingsScreenProps {
   appVersion?: string;
   onEnterDriverMode?: () => void;
   onOpenAdmin?: () => void;
+  driverStatus: "not_enrolled" | "pending" | "approved";
+  onEnrollDriver?: () => void;
 }
 
 const LANGUAGES = ["English", "Yoruba", "Igbo", "Hausa", "Pidgin"];
@@ -33,7 +35,8 @@ const FAQ = [
   { q: "How do I report an issue?", a: "Use the Feedback button below or contact support@glide.ng. For urgent safety issues, use the SOS button during an active ride to alert our safety team immediately." },
 ];
 
-export default function SettingsScreen({ settings, onSettingsChange, appVersion = "2.4.1", onEnterDriverMode, onOpenAdmin }: SettingsScreenProps) {
+export default function SettingsScreen({ settings, onSettingsChange, appVersion = "2.4.1", onEnterDriverMode, onOpenAdmin, driverStatus, onEnrollDriver }: SettingsScreenProps) {
+  const [showPendingModal, setShowPendingModal] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [langOpen, setLangOpen] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -365,13 +368,50 @@ export default function SettingsScreen({ settings, onSettingsChange, appVersion 
           </Section>
 
           {/* Developer / Demo Mode */}
-          <Section title="Demo Modes">
+          <Section title="Driver Controls">
             <Row
               icon={<Car size={16} />}
               label="Switch to Driver Mode"
-              subtitle="Simulate the driver experience"
-              right={<ChevronRight size={15} style={{ color: "var(--text-4)" }} />}
-              onClick={onEnterDriverMode}
+              subtitle={
+                driverStatus === "not_enrolled" ? "Tap to enroll & apply to drive" :
+                driverStatus === "pending" ? "Application under operator review" :
+                "Simulate the driver experience"
+              }
+              right={
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                    padding: "3px 8px",
+                    borderRadius: "99px",
+                    background: 
+                      driverStatus === "approved" ? "rgba(0,200,150,0.15)" : 
+                      driverStatus === "pending" ? "var(--primary-dim)" : 
+                      "var(--border-strong)",
+                    color: 
+                      driverStatus === "approved" ? "#00c896" : 
+                      driverStatus === "pending" ? "var(--primary)" : 
+                      "var(--text-3)",
+                    border: `1px solid ${
+                      driverStatus === "approved" ? "rgba(0,200,150,0.25)" : 
+                      driverStatus === "pending" ? "var(--primary-glow)" : 
+                      "transparent"
+                    }`
+                  }}>
+                    {driverStatus === "approved" ? "🟢 Approved" : driverStatus === "pending" ? "⏳ Pending" : "Apply"}
+                  </span>
+                  <ChevronRight size={15} style={{ color: "var(--text-4)" }} />
+                </div>
+              }
+              onClick={() => {
+                if (driverStatus === "not_enrolled") {
+                  onEnrollDriver?.();
+                } else if (driverStatus === "pending") {
+                  setShowPendingModal(true);
+                } else {
+                  onEnterDriverMode?.();
+                }
+              }}
             />
             {adminUnlocked && (
               <Row
@@ -385,6 +425,27 @@ export default function SettingsScreen({ settings, onSettingsChange, appVersion 
           </Section>
         </div>
       </div>
+
+      {/* ═══ APPLICATION PENDING MODAL ═══ */}
+      {showPendingModal && (
+        <div className="modal-overlay" onClick={() => setShowPendingModal(false)}>
+          <div className="modal-sheet animate-modal-pop" onClick={e => e.stopPropagation()}>
+            <div className="sheet-handle" />
+            <div style={{ padding: "8px 0 0 0", textAlign: "center" }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--primary-dim)", border: "1px solid var(--primary-glow)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", animation: "heartbeat 2s infinite" }}>
+                <Car size={24} style={{ color: "var(--primary)" }} />
+              </div>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 900, color: "var(--text-1)", fontFamily: "var(--font-display)", marginBottom: "8px" }}>Application Under Review</h3>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-3)", lineHeight: 1.6, marginBottom: "20px" }}>
+                Your driver profile is currently pending verification. Uyo operators verify license details, plate numbers, and payout accounts to maintain premium safety. Your status will update automatically upon approval.
+              </p>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={() => setShowPendingModal(false)} className="btn btn-primary" style={{ flex: 1 }}>Got it</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

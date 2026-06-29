@@ -6,6 +6,8 @@ import {
   MapPin, Phone, MessageSquare, X, CheckCircle, ChevronRight,
   Zap, AlertTriangle, Shield,
 } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { ref, onValue, off, update } from "firebase/database";
 
 interface IncomingRide {
   id: string;
@@ -16,13 +18,9 @@ interface IncomingRide {
   distanceKm: number;
   estimatedFare: number;
   category: string;
+  rawPickup: { lat: number; lng: number };
+  rawDropoff: { lat: number; lng: number };
 }
-
-const MOCK_RIDES: IncomingRide[] = [
-  { id: "dr1", riderName: "Amaka Obi", riderRating: 4.8, pickup: "Ibom Plaza", dropoff: "Akwa Ibom Airport", distanceKm: 14.2, estimatedFare: 4800, category: "Glide Ride" },
-  { id: "dr2", riderName: "Chukwudi Eze", riderRating: 4.5, pickup: "UNIUYO Gate", dropoff: "Uyo City Mall", distanceKm: 3.6, estimatedFare: 1600, category: "Glide Lite" },
-  { id: "dr3", riderName: "Ngozi Adeleke", riderRating: 4.9, pickup: "Ibom Icon Hotel", dropoff: "Government House", distanceKm: 5.8, estimatedFare: 2900, category: "Glide Premium" },
-];
 
 const RECENT_TRIPS = [
   { time: "12:34 PM", route: "UNIUYO → City Mall", fare: 1600 },
@@ -43,52 +41,138 @@ export default function DriverScreen({ onExitDriverMode }: DriverScreenProps) {
   const [activeRideStatus, setActiveRideStatus] = useState<"pickup" | "dropoff" | "done">("pickup");
   const [todayEarnings, setTodayEarnings] = useState(10700);
   const [tripCount, setTripCount] = useState(4);
-  const [rideQueue, setRideQueue] = useState<IncomingRide[]>([...MOCK_RIDES]);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Simulate incoming ride request when driver goes online
+  // Listen for real-time ride requests from Firebase when online
   useEffect(() => {
-    if (!isOnline || incomingRide || activeRide) return;
-    const delay = Math.random() * 4000 + 3000;
-    const timer = setTimeout(() => {
-      if (rideQueue.length > 0) {
-        setIncomingRide(rideQueue[0]);
-        setCountdown(12);
+    if (!isOnline || activeRide) {
+      setIncomingRide(null);
+      return;
+    }
+
+    const ridesRef = ref(db, "rides");
+    const listener = onValue(ridesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      // Find first ride in "searching" status
+      const pendingRide = Object.values(data).find(
+        (r: any) => r.status === "searching"
+      ) as any;
+
+      if (pendingRide) {
+        setIncomingRide({
+          id: pendingRide.id,
+          riderName: pendingRide.riderName || "Uyo Rider",
+          riderRating: pendingRide.riderRating || 4.8,
+          pickup: pendingRide.pickup?.name || "Pickup",
+          dropoff: pendingRide.dropoff?.name || "Dropoff",
+          distanceKm: pendingRide.distance || 4.2,
+          estimatedFare: pendingRide.price || 1500,
+          category: pendingRide.category || "Glide Ride",
+          rawPickup: pendingRide.pickup,
+          rawDropoff: pendingRide.dropoff,
+        });
+        setCountdown(15);
+      } else {
+        setIncomingRide(null);
       }
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [isOnline, incomingRide, activeRide, rideQueue]);
+    });
+
+    return () => off(ridesRef, "value", listener);
+  }, [isOnline, activeRide]);
 
   // Countdown timer for incoming ride
   useEffect(() => {
     if (!incomingRide) return;
     if (countdown <= 0) {
       setIncomingRide(null);
-      setRideQueue(prev => prev.slice(1));
       return;
     }
     const t = setInterval(() => setCountdown(c => c - 1), 1000);
     return () => clearInterval(t);
   }, [incomingRide, countdown]);
 
+  // Update real-time driver coordinates to Firebase during active trip
+  useEffect(() => {
+    if (!activeRide) return;
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      if (progress > 100) {
+        clearInterval(interval);
+        return;
+      }
+      
+      const startLat = activeRideStatus === "pickup" 
+        ? activeRide.rawPickup.lat + 0.004 
+        : activeRide.rawPickup.lat;
+      const startLng = activeRideStatus === "pickup" 
+        ? activeRide.rawPickup.lng + 0.004 
+        : activeRide.rawPickup.lng;
+        
+      const targetLat = activeRideStatus === "pickup"
+        ? activeRide.rawPickup.lat
+        : activeRide.rawDropoff.lat;
+      const targetLng = activeRideStatus === "pickup"
+        ? activeRide.rawPickup.lng
+        : activeRide.rawDropoff.lng;
+
+      const lat = startLat + (targetLat - startLat) * (progress / 100);
+      const lng = startLng + (targetLng - startLng) * (progress / 100);
+
+      update(ref(db, `rides/${activeRide.id}`), {
+        driverLat: lat,
+        driverLng: lng,
+      });
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [activeRide, activeRideStatus]);
+
   const handleAccept = useCallback(() => {
     if (!incomingRide) return;
+    
+    // Update state locally
     setActiveRide(incomingRide);
     setActiveRideStatus("pickup");
     setIncomingRide(null);
-    setRideQueue(prev => prev.slice(1));
+
+    // Update ride in Firebase
+    update(ref(db, `rides/${incomingRide.id}`), {
+      status: "arriving",
+      driverName: "Marcus Sterling",
+      driverPlate: "GLIDE-001",
+      driverPhone: "+234 802 345 6789",
+      driverLat: incomingRide.rawPickup.lat + 0.004,
+      driverLng: incomingRide.rawPickup.lng + 0.004,
+    });
   }, [incomingRide]);
 
   const handleDecline = useCallback(() => {
     setIncomingRide(null);
-    setRideQueue(prev => prev.slice(1));
   }, []);
 
-  const handleCompletePickup = () => setActiveRideStatus("dropoff");
+  const handleCompletePickup = () => {
+    setActiveRideStatus("dropoff");
+    if (activeRide) {
+      update(ref(db, `rides/${activeRide.id}`), {
+        status: "inprogress",
+      });
+    }
+  };
+
   const handleCompleteRide = () => {
     if (!activeRide) return;
+    
     setTodayEarnings(prev => prev + activeRide.estimatedFare);
     setTripCount(prev => prev + 1);
+
+    update(ref(db, `rides/${activeRide.id}`), {
+      status: "completed",
+    });
+
     setActiveRide(null);
     setActiveRideStatus("pickup");
   };

@@ -24,6 +24,8 @@ import ReferralScreen from "./components/referral-screen";
 import OnboardingTour from "./components/onboarding-tour";
 import AdminDashboard from "./components/admin-dashboard";
 import DriverEnrollmentModal from "./components/driver-enrollment-modal";
+import { db } from "@/lib/firebase";
+import { ref, set, push, onValue, off, update } from "firebase/database";
 
 // Import Leaflet Map dynamically (SSR disabled)
 const GlideMap = dynamic(() => import("./components/map"), {
@@ -102,7 +104,8 @@ export default function Home() {
   });
 
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
-
+  const [currentRideId, setCurrentRideId] = useState<string | null>(null);
+  const [driverDetails, setDriverDetails] = useState<any | null>(null);
 
   // ── View State Machine ──
   const [currentView, setCurrentView] = useState<AppView>("home");
@@ -246,6 +249,153 @@ export default function Home() {
     }
   }, [pickup, dropoff]);
 
+  // ── Firebase Realtime Ride Listener ──
+  useEffect(() => {
+    if (!currentRideId) return;
+
+    const rideRef = ref(db, `rides/${currentRideId}`);
+    const listener = onValue(rideRef, (snapshot) => {
+      const val = snapshot.val();
+      if (!val) return;
+
+      // Update pickup/dropoff/price from database if they changed
+      if (val.status !== rideStatus) {
+        setRideStatus(val.status);
+      }
+
+      // Update driver coordinates in real time
+      if (val.driverName) {
+        setDriverDetails({
+          name: val.driverName,
+          plate: val.driverPlate || "GLIDE-001",
+          phone: val.driverPhone || "+234 802 345 6789",
+          lat: val.driverLat,
+          lng: val.driverLng,
+        });
+      }
+
+      // Handle Completed Ride
+      if (val.status === "completed" && pickup && dropoff) {
+        const record: RideRecord = {
+          id: val.id,
+          date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
+          pickup: val.pickup.name,
+          dropoff: val.dropoff.name,
+          pickupData: val.pickup,
+          dropoffData: val.dropoff,
+          fare: val.price,
+          distance: val.distance || distance,
+          category: val.category,
+          driverName: val.driverName || "Marcus Sterling",
+          rating: 5,
+          status: "completed",
+        };
+
+        setRideHistory(prev => [record, ...prev]);
+        setPayment(prev => ({
+          ...prev,
+          walletBalance: prev.walletBalance - val.price,
+          transactions: [{
+            id: `tx${Date.now()}`,
+            date: "Just now",
+            description: `Ride — ${val.pickup.name} → ${val.dropoff.name}`,
+            amount: val.price,
+            type: "debit",
+          }, ...prev.transactions],
+        }));
+
+        setPendingRating({
+          driverName: val.driverName || "Marcus Sterling",
+          categoryName: val.category,
+          fare: val.price,
+          pickupName: val.pickup.name,
+          dropoffName: val.dropoff.name,
+        });
+
+        setIsBooked(false);
+        setPickup(null);
+        setDropoff(null);
+        setCurrentRideId(null);
+        setDriverDetails(null);
+        setCurrentView("home");
+      }
+
+      // Handle Cancelled Ride
+      if (val.status === "cancelled" && pickup && dropoff) {
+        setRideHistory(prev => [{
+          id: val.id,
+          date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
+          pickup: val.pickup.name,
+          dropoff: val.dropoff.name,
+          pickupData: val.pickup,
+          dropoffData: val.dropoff,
+          fare: 0,
+          distance: val.distance || distance,
+          category: val.category,
+          driverName: val.driverName || "Marcus Sterling",
+          status: "cancelled",
+          cancelReason: val.cancelReason || "User cancelled",
+        }, ...prev]);
+
+        setIsBooked(false);
+        setPickup(null);
+        setDropoff(null);
+        setCurrentRideId(null);
+        setDriverDetails(null);
+        setRideStatus("searching");
+        setCurrentView("home");
+      }
+    });
+
+    // Auto-accept ride simulation fallback if no driver accepts within 4.5 seconds
+    const acceptTimer = setTimeout(() => {
+      const rideRefCurrent = ref(db, `rides/${currentRideId}`);
+      onValue(rideRefCurrent, (snapshot) => {
+        const val = snapshot.val();
+        if (val && val.status === "searching") {
+          update(ref(db, `rides/${currentRideId}`), {
+            status: "arriving",
+            driverName: "Marcus Sterling",
+            driverPlate: "GLIDE-001",
+            driverPhone: "+234 802 345 6789",
+            driverLat: val.pickup.lat + 0.004,
+            driverLng: val.pickup.lng + 0.004,
+          });
+        }
+      }, { onlyOnce: true });
+    }, 4500);
+
+    return () => {
+      off(rideRef, "value", listener);
+      clearTimeout(acceptTimer);
+    };
+  }, [currentRideId, pickup, dropoff, distance, rideStatus]);
+
+  // ── Firebase Realtime Driver Applications Listener ──
+  useEffect(() => {
+    const appsRef = ref(db, "driver_applications");
+    const listener = onValue(appsRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        const list = Object.values(val);
+        setDriverApplications(list);
+
+        // Synchronize driver status in settings for the current user
+        const myApp = list.find((app: any) => app.fullName === userProfile.fullName) as any;
+        if (myApp) {
+          setDriverStatus(myApp.status);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("glide_driver_status", myApp.status);
+          }
+        }
+      } else {
+        setDriverApplications([]);
+      }
+    });
+
+    return () => off(appsRef, "value", listener);
+  }, [userProfile.fullName]);
+
   // ─── HANDLERS ───
 
   const handleLoginSuccess = (name: string, phone: string, email: string) => {
@@ -274,75 +424,46 @@ export default function Home() {
   };
 
   const handleBookingConfirmed = (p: LocationData, d: LocationData, cat: RideCategory, price: number) => {
+    // 1. Create a ride entry in Firebase Realtime Database
+    const ridesRef = ref(db, "rides");
+    const newRideRef = push(ridesRef);
+    const rideId = newRideRef.key;
+
+    if (rideId) {
+      set(newRideRef, {
+        id: rideId,
+        riderName: userProfile.fullName,
+        riderRating: 4.8,
+        pickup: p,
+        dropoff: d,
+        category: cat.name,
+        price,
+        distance,
+        status: "searching",
+        createdAt: Date.now(),
+      });
+      setCurrentRideId(rideId);
+    }
+
     setPickup(p);
     setDropoff(d);
     setSelectedCategory(cat);
     setBookedPrice(price);
-    setRideStatus("arriving");
+    setRideStatus("searching");
     setIsBooked(true);
     setCurrentView("ride");
+
     // Add to recent destinations
     setRecentDestinations(prev => [d, ...prev.filter(l => l.name !== d.name)].slice(0, 5));
   };
 
   const handleCancelRide = () => {
-    if (rideStatus !== "completed" && pickup && dropoff) {
-      setRideHistory(prev => [{
-        id: `r${Date.now()}`,
-        date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
-        pickup: pickup.name,
-        dropoff: dropoff.name,
-        pickupData: pickup,
-        dropoffData: dropoff,
-        fare: 0,
-        distance,
-        category: selectedCategory?.name || "",
-        driverName: "Marcus Sterling",
+    if (currentRideId) {
+      update(ref(db, `rides/${currentRideId}`), {
         status: "cancelled",
-        cancelReason: "User cancelled",
-      }, ...prev]);
-      setIsBooked(false);
-      setPickup(null);
-      setDropoff(null);
-      setRideStatus("searching");
-      setCurrentView("home");
-      return;
-    }
-    if (rideStatus === "completed" && pickup && dropoff) {
-      const record: RideRecord = {
-        id: `r${Date.now()}`,
-        date: new Date().toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }),
-        pickup: pickup.name,
-        dropoff: dropoff.name,
-        pickupData: pickup,
-        dropoffData: dropoff,
-        fare: bookedPrice,
-        distance,
-        category: selectedCategory?.name || "",
-        driverName: "Marcus Sterling",
-        rating: 5,
-        status: "completed",
-      };
-      setRideHistory(prev => [record, ...prev]);
-      setPayment(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - bookedPrice,
-        transactions: [{
-          id: `tx${Date.now()}`,
-          date: "Just now",
-          description: `Ride — ${pickup.name} → ${dropoff.name}`,
-          amount: bookedPrice,
-          type: "debit",
-        }, ...prev.transactions],
-      }));
-      // Show rating modal before returning home
-      setPendingRating({
-        driverName: "Marcus Sterling",
-        categoryName: selectedCategory?.name || "",
-        fare: bookedPrice,
-        pickupName: pickup.name,
-        dropoffName: dropoff.name,
+        cancelReason: "Rider cancelled",
       });
+    } else {
       setIsBooked(false);
       setPickup(null);
       setDropoff(null);
@@ -402,35 +523,30 @@ export default function Home() {
       ...details,
       fullName: userProfile.fullName,
       appliedAt: new Date().toLocaleDateString("en-NG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      status: "pending",
     };
-    const updatedApps = [...driverApplications, newApp];
-    setDriverApplications(updatedApps);
+
+    // Save in Firebase Database
+    set(ref(db, `driver_applications/${userProfile.fullName}`), newApp);
+
     setDriverStatus("pending");
     setShowEnrollmentModal(false);
+
     if (typeof window !== "undefined") {
       localStorage.setItem("glide_driver_status", "pending");
-      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
     }
   };
 
   const handleApproveDriver = (fullName: string) => {
-    setDriverStatus("approved");
-    const updatedApps = driverApplications.filter(app => app.fullName !== fullName);
-    setDriverApplications(updatedApps);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("glide_driver_status", "approved");
-      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
-    }
+    update(ref(db, `driver_applications/${fullName}`), {
+      status: "approved",
+    });
   };
 
   const handleRejectDriver = (fullName: string) => {
-    setDriverStatus("not_enrolled");
-    const updatedApps = driverApplications.filter(app => app.fullName !== fullName);
-    setDriverApplications(updatedApps);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("glide_driver_status", "not_enrolled");
-      localStorage.setItem("glide_driver_applications", JSON.stringify(updatedApps));
-    }
+    update(ref(db, `driver_applications/${fullName}`), {
+      status: "not_enrolled",
+    });
   };
 
 
@@ -470,6 +586,8 @@ export default function Home() {
           deviceLocation={deviceLocation}
           surgeMultiplier={surgeMultiplier}
           showSurgeOverlay={currentView === "booking"}
+          driverLat={driverDetails?.lat}
+          driverLng={driverDetails?.lng}
         />
       </div>
 
@@ -529,6 +647,7 @@ export default function Home() {
             status={rideStatus}
             onStatusChange={setRideStatus}
             onCancel={handleCancelRide}
+            currentRideId={currentRideId}
           />
         )}
 
@@ -567,6 +686,8 @@ export default function Home() {
             onSettingsChange={setSettings}
             onEnterDriverMode={handleEnterDriverModeRequest}
             onOpenAdmin={() => setShowAdmin(true)}
+            driverStatus={driverStatus}
+            onEnrollDriver={() => setShowEnrollmentModal(true)}
           />
         )}
 

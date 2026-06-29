@@ -6,6 +6,8 @@ import {
   X, Share2, AlertTriangle, Copy, Check, ArrowRight, Navigation2,
   Sliders, Clock
 } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { ref, push, set, onValue, off } from "firebase/database";
 
 export type RideStatus = "searching" | "arriving" | "arrived" | "inprogress" | "completed";
 
@@ -17,6 +19,7 @@ interface ActiveRideProps {
   status: RideStatus;
   onStatusChange: (status: RideStatus) => void;
   onCancel: () => void;
+  currentRideId?: string | null;
 }
 
 const CANCEL_REASONS = [
@@ -205,7 +208,7 @@ function RouteProgressWidget({
 }
 
 export default function ActiveRide({
-  categoryName, price, pickupName, dropoffName, status, onStatusChange, onCancel,
+  categoryName, price, pickupName, dropoffName, status, onStatusChange, onCancel, currentRideId
 }: ActiveRideProps) {
   const [eta, setEta] = useState(3);
   const [seconds, setSeconds] = useState(0);
@@ -218,11 +221,27 @@ export default function ActiveRide({
   const [cancelReason, setCancelReason] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [copied, setCopied] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<any[]>([
     { from: "driver", text: "Hello! I'm on my way to your pickup location." },
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const shareUrl = useMemo(() => `https://glide.ng/track/${Math.random().toString(36).slice(2, 8).toUpperCase()}`, []);
+
+  // Sync chat messages in real time from Firebase
+  useEffect(() => {
+    if (!currentRideId) return;
+
+    const messagesRef = ref(db, `rides/${currentRideId}/messages`);
+    const listener = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data).sort((a: any, b: any) => a.timestamp - b.timestamp);
+        setMessages(list as any);
+      }
+    });
+
+    return () => off(messagesRef, "value", listener);
+  }, [currentRideId]);
 
   useEffect(() => {
     if (status === "searching" || status === "completed") return;
@@ -256,12 +275,37 @@ export default function ActiveRide({
 
   const sendMessage = () => {
     if (!chatInput.trim()) return;
-    setMessages(prev => [...prev, { from: "user", text: chatInput.trim() }]);
+
+    const text = chatInput.trim();
     setChatInput("");
-    setTimeout(() => {
-      const r = ["Got it, be there shortly!", "On my way 👍", "I can see you on the map.", "2 minutes away!"];
-      setMessages(prev => [...prev, { from: "driver", text: r[Math.floor(Math.random() * r.length)] }]);
-    }, 1500);
+
+    if (currentRideId) {
+      const messagesRef = ref(db, `rides/${currentRideId}/messages`);
+      const newMsgRef = push(messagesRef);
+      set(newMsgRef, {
+        from: "user",
+        text,
+        timestamp: Date.now(),
+      });
+
+      // Simulation auto-reply from mock driver in database
+      // Only triggered if driverName === Marcus Sterling (simulation driver)
+      setTimeout(() => {
+        const responses = ["Got it, be there shortly!", "On my way 👍", "I can see you on the map.", "2 minutes away!"];
+        const replyRef = push(messagesRef);
+        set(replyRef, {
+          from: "driver",
+          text: responses[Math.floor(Math.random() * responses.length)],
+          timestamp: Date.now(),
+        });
+      }, 1800);
+    } else {
+      setMessages(prev => [...prev, { from: "user", text }]);
+      setTimeout(() => {
+        const r = ["Got it, be there shortly!", "On my way 👍", "I can see you on the map.", "2 minutes away!"];
+        setMessages(prev => [...prev, { from: "driver", text: r[Math.floor(Math.random() * r.length)] }]);
+      }, 1500);
+    }
   };
 
   const handleCopy = useCallback(() => {

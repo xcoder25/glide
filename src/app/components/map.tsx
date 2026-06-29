@@ -11,12 +11,17 @@ interface MapProps {
   deviceLocation?: LocationData | null;
   surgeMultiplier?: number;
   showSurgeOverlay?: boolean;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 const DEFAULT_MAP_KEY = "AIzaSyC9pjeW86GjRVxD61kagnVyopzLuRamdpA";
 const MAP_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || DEFAULT_MAP_KEY;
 
-export default function Map({ pickup, dropoff, status, deviceLocation = null, surgeMultiplier = 1, showSurgeOverlay = false }: MapProps) {
+export default function Map({
+  pickup, dropoff, status, deviceLocation = null, surgeMultiplier = 1, showSurgeOverlay = false,
+  driverLat, driverLng
+}: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
@@ -91,6 +96,11 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null, su
 
   // Driver movement simulation
   useEffect(() => {
+    if (driverLat !== undefined && driverLng !== undefined && driverLat !== null && driverLng !== null) {
+      setDriverPos([driverLat, driverLng]);
+      return;
+    }
+
     if (!pickup || !dropoff) {
       setDriverPos(null);
       return;
@@ -139,7 +149,7 @@ export default function Map({ pickup, dropoff, status, deviceLocation = null, su
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [pickup, dropoff, status]);
+  }, [pickup, dropoff, status, driverLat, driverLng]);
 
   // Update markers, polyline and bounds
   useEffect(() => {
