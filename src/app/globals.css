@@ -443,13 +443,13 @@ body {
 }
 
 .glass-card-hover {
-  transition: all 0.24s var(--ease);
+  transition: all 0.28s var(--ease);
 }
 .glass-card-hover:hover {
   background: var(--bg-card-hover-gradient);
   border-color: var(--glass-card-hover-border);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), 0 0 16px rgba(255, 82, 0, 0.06);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg), 0 10px 30px rgba(0, 0, 0, 0.04), 0 0 20px var(--primary-glow);
 }
 .glass-card-hover:active {
   transform: scale(0.96) translateY(0);
@@ -463,9 +463,12 @@ body {
   gap: 14px;
   padding: max(env(safe-area-inset-top, 0px), 18px) 20px 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   flex-shrink: 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+  z-index: 10;
 }
 
 .page-title {
@@ -530,13 +533,15 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #e05a12 100%);
+  background: var(--primary-gradient);
   color: #fff;
-  box-shadow: var(--shadow-primary);
+  box-shadow: 0 4px 20px rgba(255, 82, 0, 0.28), 0 0 0 1px rgba(255, 82, 0, 0.15);
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 .btn-primary:hover {
   filter: brightness(1.08);
-  box-shadow: 0 6px 32px rgba(255,107,26,0.50);
+  box-shadow: 0 8px 30px rgba(255, 0, 122, 0.45), 0 0 24px rgba(255, 82, 0, 0.25);
 }
 
 /* Shimmer */
@@ -608,8 +613,8 @@ body {
 .input-field::placeholder { color: var(--text-3) !important; }
 .input-field:focus {
   border-color: var(--primary) !important;
-  background: var(--bg-card) !important;
-  box-shadow: 0 0 0 3px var(--primary-ring) !important;
+  background: var(--bg-surface) !important;
+  box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 12px rgba(255, 82, 0, 0.06) !important;
 }
 
 /* OTP */
@@ -629,8 +634,8 @@ body {
 }
 .otp-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-ring);
-  background: var(--bg-card);
+  box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 12px rgba(255, 82, 0, 0.06);
+  background: var(--bg-surface);
 }
 
 /* ══════════════════════════════════════════════════════════
